@@ -1,0 +1,28 @@
+# IDEs
+.idea/
+.sublime*
+
+# Logs
+/logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Dependency directory
+node_modules
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Ignore typings folder
+typings
+
+# Source maps for JS builds
+*.js.map
