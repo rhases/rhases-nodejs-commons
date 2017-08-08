@@ -1,29 +1,42 @@
-# Example Typescript 2.x Library
+# Node.js Utilities
 
-Simple starter library from June 2017.
-Tutorial can be found at
-[how-to-write-a-typescript-library.com](http://how-to-write-a-typescript-library.com).
+## Installation
 
-Or just browse the code here! Or clone the repo.
-
-# Usage
-
-```
-git clone https://github.com/bersling/typescript-library-starter.git
+Using npm:
+```shell
+$ npm i --save rhases-nodejs-commons
 ```
 
-then modify whatever you want, then
+## Using
 
+### Pino Log
+
+```js
+import l from 'rhases-nodejs-commons';
+
+l.error(err);
+l.info("foo", foo);
 ```
-tsc
+### Service Utils
+
+```js
+import {ServiceUtils} from 'rhases-nodejs-commons';
+
+serviceUtils = new ServiceUtils(MyMongooseModel);
+
+all() {
+  return this.serviceUtils.all();
+}
 ```
+### Controller Utils
 
-You can check if everything is working like this:
-http://how-to-write-a-typescript-library.com/local-consumer
+```js
+import {ControllerUtils} from 'rhases-nodejs-commons';
 
-You can write a test like this:
-http://how-to-write-a-typescript-library.com/unit-testing
+controllerUtils = new ControllerUtils(MyService);
 
-And once you're ready, simply change the `name` in the `package.json`
-and publish your brand new cool library. Have fun!
+byId(req, res) {
+  this.controllerUtils.byId(req, res);
+}
+```
 
