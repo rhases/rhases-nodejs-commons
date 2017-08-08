@@ -1,12 +1,29 @@
-# TypeScript npm package boilerplate
+# Example Typescript 2.x Library
 
-[![npm version](https://badge.fury.io/js/ts-npm-boilerplate.svg)](https://www.npmjs.com/package/ts-npm-boilerplate)
+Simple starter library from June 2017.
+Tutorial can be found at
+[how-to-write-a-typescript-library.com](http://how-to-write-a-typescript-library.com).
 
-A boilerplate project specifically aimed at creating npm modules in TypeScript.
+Or just browse the code here! Or clone the repo.
 
-### Installation
+# Usage
 
-1. Clone the repo: `git clone https://github.com/nebez/ts-npm-boilerplate.git`
-2. Install the dependencies: `npm install`
-3. Compile to JS: `npm run compile`
-4. Run the test suite: `npm test`
+```
+git clone https://github.com/bersling/typescript-library-starter.git
+```
+
+then modify whatever you want, then
+
+```
+tsc
+```
+
+You can check if everything is working like this:
+http://how-to-write-a-typescript-library.com/local-consumer
+
+You can write a test like this:
+http://how-to-write-a-typescript-library.com/unit-testing
+
+And once you're ready, simply change the `name` in the `package.json`
+and publish your brand new cool library. Have fun!
+
