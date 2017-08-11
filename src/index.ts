@@ -1,5 +1,6 @@
 export * from './logger';
-export * from './utils/authorization.utils';
+export * from './security/authorization.utils';
+export * from './security/authentication.service';
 export * from './utils/base.controller';
 export * from './utils/base.query-builder';
 export * from './utils/controller.utils';

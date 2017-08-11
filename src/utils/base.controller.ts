@@ -30,8 +30,8 @@ export function baseCtrlFind(req: any, res: Response, model: Model<Document>) {
 
 export function baseCtrlFindById(req: Request, res: Response, model: Model<Document>){
   findEntityById(model, req.params.id)
-  .then(checkAuthorization('read', req))
   .then(handleEntityNotFound(res))
+  .then(checkAuthorization('read', req))
   .then(respondWithResult(res))
   .catch(handleError(res))
 }

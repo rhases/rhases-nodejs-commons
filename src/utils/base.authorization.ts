@@ -1,11 +1,23 @@
 'use strict'
 
-import { hasRole } from './authorization.utils';
+import { isAuthenticated } from '../security/authentication.service';
+import { hasRole } from '../security/authorization.utils';
+import l from '../logger';
+var createError = require('http-errors');
+
 
 export function checkAuthorization(op, req){
   return function(entity){
+    l.debug(entity);
     //if not auth throws error
+    if(!isAuthenticated(req)){
+      throw createError(401, 'user not authenticated')
+    }
+    l.debug('verifying authorization of "' + op + '" for user ' + req.user.name);
 
+    if(entity.userId !== req.user._id){
+      throw createError(403, 'userId of loggedin user different from entity owner');
+    }
     return entity; //ok
   }
 }

@@ -6,6 +6,7 @@
  */
 import Q from 'q';
 import _ from 'lodash';
+import { authenticate } from './authentication.service'
 
 //import config from '../../config/environment';
 
@@ -33,14 +34,6 @@ function getRoles(user) {
 /**
  * #####  UTILS  #####
  */
-
-/**
- * Checks if request is authenticated
- */
-export function isAuthenticated(req) {
-	return req.user !== undefined;
-}
-
 
 /**
  * Checks if the user role meets the minimum requirements of the route
@@ -81,23 +74,6 @@ export function hasAllRoles(user, allRolesRequired) {
  * #####  INTERCEPTORS  #####
  */
 
-/**
- * Attaches the user object to the request if authenticated
- * Otherwise returns 403
- */
-export function ensureIsAuthenticated() {
-    return function(req, res, next) {
-		this.authenticate(req, res)
-			.then(function() {
-				next();
-			})
-			.catch(function(err) {
-				l.error("Unexpected error. Reason: " + err);
-				res.status(500).send(err);
-			})
-			.done();
-        };
-}
 
 /**
  * Checks if the user role meets the minimum requirements of the route
@@ -108,7 +84,7 @@ export function ensureHasRole(roleRequired) {
     }
 
     return function(req, res, next) {
-		this.authenticate(req, res)
+			authenticate(req, res)
 			.then(function() {
 				if (!req.user)
 					return;
@@ -139,7 +115,7 @@ export function ensureHasAnyRole(anyRolesRequired) {
     }
 
     return function(req, res, next) {
-		this.authenticate(req, res)
+			authenticate(req, res)
 			.then(function() {
 				if (!req.user)
 					return;
@@ -170,7 +146,7 @@ export function ensureHasAllRoles(allRolesRequired) {
     }
 
     return function(req, res, next) {
-		this.authenticate(req, res)
+			authenticate(req, res)
 			.then(function() {
 				if (!req.user)
 					return;
