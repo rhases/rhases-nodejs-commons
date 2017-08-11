@@ -14,7 +14,7 @@ import { Model, Document, DocumentQuery } from 'mongoose';
 
 export function baseCtrlCreate(req: Request, res: Response, model: Model<Document>, options?:any) {
   entityFromBody(req, options.setUser)
-  .then(checkAuthorization('create', req.body))
+  .then(checkAuthorization('create', req))
   .then(createEntity(model))
   .then(respondWithResult(res))
   .catch(handleError(res))
