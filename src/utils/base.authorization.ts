@@ -9,13 +9,9 @@ var createError = require('http-errors');
 export function checkAuthorization(op, req){
   return function(entity){
     l.debug(entity);
-    //if not auth throws error
-    if(!isAuthenticated(req)){
-      throw createError(401, 'user not authenticated')
-    }
-    l.debug('verifying authorization of "' + op + '" for user ' + req.user.name);
+    l.debug('verifying authorization of "' + op + '" for user ' + (req.user ? req.user.name : 'unauthenticated'));
 
-    if(entity.userId !== req.user._id){
+    if(entity.userId && (!isAuthenticated(req) || entity.userId !== req.user._id)){
       throw createError(403, 'userId of loggedin user different from entity owner');
     }
     return entity; //ok
