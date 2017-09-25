@@ -38,7 +38,7 @@ export function authenticate(req, res) {
 
 function queryMe(req) {
 	return Q.nfcall(request.get,  {
-			url: process.env.AUTHENTICATOR_URI + "/me",
+			url: process.env.AUTHENTICATOR_URI + "/api/users/me",
 			headers: { authorization: req.headers.authorization },
 			json: true,
 		})
