@@ -5,7 +5,7 @@ var Q = require('q');
 import { checkAuthorization } from './base.authorization';
 import { handleEntityNotFound, respondWithResult, handleError } from './controller.utils';
 
-import { createEntity, findEntityById, applyUpdate, removeEntity}  from './entity.utils';
+import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity}  from './entity.utils';
 import  { createQueryExecutor, execFindAndCound } from './base.query-builder';
 
 import { Request, Response } from 'express';
@@ -48,6 +48,16 @@ export function baseCtrlUpdate(req: Request, res: Response, model: Model<Documen
   .then(handleEntityNotFound(res))
   .then(checkAuthorization('update', req))
   .then(applyUpdate(req.body))
+  .then(respondWithResult(res))
+  .catch(handleError(res))
+}
+
+export function baseCtrlPatch(req: Request, res: Response, model: Model<Document>) {
+  //contruct query
+  findEntityById(model, req.params.id)
+  .then(handleEntityNotFound(res))
+  .then(checkAuthorization('update', req))
+  .then(applyPatch(req.body))
   .then(respondWithResult(res))
   .catch(handleError(res))
 }
