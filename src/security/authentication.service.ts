@@ -4,13 +4,13 @@
 /**
  * Authenticator.
  */
+import l from '../logger';
 
 var request = require('request');
 var createError = require('http-errors');
 
 var Q = require('q');
 var _ = require('lodash');
-import l from '../logger';
 
 
 /**
@@ -70,7 +70,7 @@ export function getUserInfomations(email) {
 	// TODO: Need to auth server-server
 
 	return Q.nfcall(request.get, {
-			url: process.env.AUTHENTICATOR_URI + "/email/" + email,
+			url: process.env.AUTHENTICATOR_URI + "/api/users/email/" + email,
 			// headers: { authorization: req.headers.authorization },
 			json: true,
 		})

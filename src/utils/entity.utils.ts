@@ -17,6 +17,8 @@ export function applyUpdate(updates) {
 
 export function applyPatch(patch) {
   return function (entity) {
+    //TODO clear code
+    //TODO check if patch is array
     console.log('----- entity ----');
     console.log(entity);
     if (!entity) return;
