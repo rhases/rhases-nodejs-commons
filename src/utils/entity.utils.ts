@@ -3,6 +3,9 @@
 import { Model, Document, DocumentQuery } from 'mongoose';
 var Q = require('q');
 
+import l from '../logger';
+var _ = require("lodash");
+
 export function applyUpdate(updates) {
   return function (entity) {
     if (!entity) return;
@@ -15,28 +18,31 @@ export function applyUpdate(updates) {
   };
 }
 
-export function applyPatch(patch) {
+export function applyPatch(patches) {
   return function (entity) {
-    console.log('----- entity ----');
-    console.log(entity);
-    if (!entity) return;
-    console.log(JSON.stringify(patch));
-    var def = Q.defer();
-    return entity.patch(patch)
-    //   , function callback(err) {
-    //   if(err) {
-    //     console.log(err);
-    //     Q.reject(err)
-    //   }
-    //   console.log('ok');
-    //   Q.resolve('ok')
-    // })
-    // return def.promise.then((result) => {
-    //   console.log('----- result ----');
-    //   console.log(result);
-    //   return result;
-    // });
+    if(!_.isArray(patches)){
+      l.warn('trying to apply patches, but patches are not an array!')
+      patches = [patches];
+    }
+    return patchAsPromised(entity, patches)
+    .then((result)=>{
+      l.trace(result);
+      return result;
+    });
   };
+}
+
+function patchAsPromised(entity, patches){
+    var def = Q.defer();
+    entity.patch(patches, function callback(err, result, number) {
+      if(err) {
+        l.trace(`patch rejected ${err}`);
+        def.reject(err)
+      }
+      l.trace(`patched documents ${number}`);
+      def.resolve(result.toObject())
+  });
+  return def.promise;
 }
 
 export function removeEntity() {

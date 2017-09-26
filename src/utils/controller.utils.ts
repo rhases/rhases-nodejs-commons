@@ -37,3 +37,9 @@ export function handleError(res:any, statusCode?:number) {
     res.status(statusCode).send(err);
   };
 }
+
+export function successMessageResult(){
+  return function() {
+    return 'Success';
+  }
+}

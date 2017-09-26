@@ -3,10 +3,10 @@ import l from '../logger';
 var Q = require('q');
 
 import { checkAuthorization } from './base.authorization';
-import { handleEntityNotFound, respondWithResult, handleError } from './controller.utils';
+import { handleEntityNotFound, respondWithResult, handleError } from '../utils/controller.utils';
 
-import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity}  from './entity.utils';
-import  { createQueryExecutor, execFindAndCound } from './base.query-builder';
+import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity}  from '../utils/entity.utils';
+import  { createQueryExecutor, execFindAndCound } from '../utils/base.query-builder';
 
 import { Request, Response } from 'express';
 import { Model, Document, DocumentQuery } from 'mongoose';

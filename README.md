@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rhases/rhases-nodejs-commons.svg?branch=develop)](https://travis-ci.org/rhases/rhases-nodejs-commons)
+
 # Node.js Utilities
 
 ## Installation
@@ -40,3 +42,4 @@ byId(req, res) {
 }
 ```
 
+## Control Access
