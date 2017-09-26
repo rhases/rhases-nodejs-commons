@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.9"></a>
+## [0.2.9](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.8...v0.2.9) (2017-09-26)
+
+
+### Bug Fixes
+
+* deploy from travis ([a85a3f9](https://github.com/rhases/rhases-nodejs-commons/commit/a85a3f9))
+
+
+
 <a name="0.2.8"></a>
 ## [0.2.8](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.6...v0.2.8) (2017-09-26)
 
