@@ -7,7 +7,7 @@ cache:
 node_js:
 - '6'
 before_install:
-- npm i -g
+- npm i typescript -g
 install:
 - npm i
 before_script:

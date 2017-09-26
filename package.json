@@ -51,8 +51,7 @@
     "q": "^1.5.0",
     "standard-version": "^3.0.0",
     "ts-node": "^3.2.0",
-    "byots": "2.6.0-dev.20170923.0.10",
-    "typescript": "^2.5.0"
+    "typescript": "^2.5.2"
   },
   "peerDependencies": {
     "express": "4.x",
