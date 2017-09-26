@@ -28,17 +28,17 @@ describe('[Access Control]', () => {
     ]);
 
     adminUser = {
-      id: '001',
+      _id: '001',
       roles: ['admin']
     };
 
     normalUser = {
-      id: '100',
+      _id: '100',
       roles: ['user']
     };
 
     guestUser = {
-      id: '200',
+      _id: '200',
       roles: ['guest']
     };
 
@@ -116,7 +116,6 @@ describe('[Access Control]', () => {
       return accessControll.checkUpdate(req)
       .then(function(check){
           expect(check.isGranted).to.equal(true);
-          expect(check.applyQueryRestriction(queryMock)).to.equal({});
       })
     });
 
