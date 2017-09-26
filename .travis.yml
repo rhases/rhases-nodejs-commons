@@ -12,7 +12,7 @@ install:
 - npm i
 script:
 - npm test
-- npm run build
+- npm run compile
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 branches:

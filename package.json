@@ -5,7 +5,6 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "tsc": "./node_modules/.bin/tsc",
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "clean": "rm -rf dist/",
     "precompile": "npm run clean",
