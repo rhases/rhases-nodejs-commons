@@ -64,3 +64,8 @@ export function execFind(model: Model<Document>, queryBuilder: (query: DocumentQ
 
   return query.exec();
 }
+export function execFindByIdWithQueryBuilder(model: Model<Document>, id, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>) {
+  var self = this;
+  return queryBuilder(model.findById(id))
+  .exec();
+}

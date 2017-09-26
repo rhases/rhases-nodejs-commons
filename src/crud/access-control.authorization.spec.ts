@@ -3,17 +3,17 @@ import { expect } from 'chai';
 
 import * as mocha from 'mocha';
 
-import { HasOwnerAccessControl } from './access-control.authorization';
+import { CrudAccessControl } from './access-control.authorization';
 import l from '../logger';
 
 
 
 describe('[Access Control]', () => {
-    var accessControll: HasOwnerAccessControl;
+    var accessControll: CrudAccessControl;
     var newVideo, myVideo, videoFromThirdPary, adminUser, normalUser, guestUser;
     var queryMock;
 
-    accessControll = new HasOwnerAccessControl('video', [
+    accessControll = new CrudAccessControl('video', [
       { role: 'guest', resource: 'catalog', action: 'read:any', attributes: ['*'] },
 
       { role: 'admin', resource: 'video', action: 'create:any', attributes: ['*'] },
@@ -105,7 +105,7 @@ describe('[Access Control]', () => {
       return accessControll.checkUpdate(req)
       .then(function(check){
           expect(check.isGranted).to.equal(true);
-          expect(check.queryBuilder({})).to.be.empty;
+          //expect(check.applyQueryRestriction({})).to.be.empty;
       })
     });
 
@@ -116,7 +116,7 @@ describe('[Access Control]', () => {
       return accessControll.checkUpdate(req)
       .then(function(check){
           expect(check.isGranted).to.equal(true);
-          expect(check.queryBuilder(queryMock)).to.equal({});
+          expect(check.applyQueryRestriction(queryMock)).to.equal({});
       })
     });
 

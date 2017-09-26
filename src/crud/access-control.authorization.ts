@@ -3,12 +3,12 @@
 import { isAuthenticated } from '../security/authentication.service';
 import { hasRole } from '../security/authorization.utils';
 import l from '../logger';
-import { AccessControl, Query } from 'accesscontrol';
-
+import { AccessControl, Query, Permission } from 'accesscontrol';
+import { Model, Document, DocumentQuery } from 'mongoose';
 var createError = require('http-errors');
 var Q = require('q');
 
-export class HasOwnerAccessControl {
+export class CrudAccessControl {
 
   ac:AccessControl;
 
@@ -30,28 +30,16 @@ export class HasOwnerAccessControl {
    )
   }
 
-  checkFind(req):Promise<Check>{
+  checkRead(req):Promise<Check>{
     var self = this;
     return this.baseCheck(req, 'read',
       function(check, access){
         return check;
       },
       function(check, access){
-        check.queryBuilder = self.restrictByUserOrOrganizationOwner
+        check.applyQueryRestriction = self.restrictByUserOrOrganizationOwner(req)
         return check;
       }
-   )
-  }
-
-  checkFindById(req):Promise<Check>{
-    return this.baseCheck(req, 'read',
-      function(check, access){
-        return check;
-      },
-      function(check, access){
-        check.queryBuilder = this.restrictByUserOrOrganizationOwner
-        return check;
-      },
    )
   }
 
@@ -62,7 +50,7 @@ export class HasOwnerAccessControl {
         return check;
       },
       function(check, access){
-        check.queryBuilder = self.restrictByUserOrOrganizationOwner(req)
+        check.applyQueryRestriction = self.restrictByUserOrOrganizationOwner(req)
         return check;
       },
    )
@@ -75,7 +63,7 @@ export class HasOwnerAccessControl {
         return check;
       },
       function(check, access){
-        check.queryBuilder = this.restrictByUserOrOrganizationOwner(req)
+        check.applyQueryRestriction = this.restrictByUserOrOrganizationOwner(req)
         return check;
       },
    )
@@ -85,7 +73,10 @@ export class HasOwnerAccessControl {
     accessAnyCallback:(check:Check, access:any) => Check,
     accessOwnCallback:(check:Check, access:any) => Check):Promise<Check>{
 
-    l.trace(req);
+    l.debug(`${op}:${this.resource}`);
+    l.debug(req);
+    l.debug(req.user);
+    l.debug(req.user.roles);
 
     var defer = Q.defer();
     var query:Query = this.ac.can(req.user.roles);
@@ -95,7 +86,7 @@ export class HasOwnerAccessControl {
     if(accessAny.granted){
       //any permission
       check.isGranted = true;
-      check.filterAfterQuery = accessAny.filter;
+      check.filterAfterQuery = this.filterAfterQuery(accessAny);
       l.trace('granted access any');
       defer.resolve(accessAnyCallback(check, accessAny));
     }else {
@@ -103,7 +94,7 @@ export class HasOwnerAccessControl {
       var accessOwn = query[op+'Own'](this.resource);
       if(accessOwn.granted){
         check.isGranted = true;
-        check.filterAfterQuery = accessOwn.filter;
+        check.filterAfterQuery = this.filterAfterQuery(accessOwn);
         l.trace('granted access own');
         defer.resolve(accessOwnCallback(check, accessOwn));
       }
@@ -118,17 +109,23 @@ export class HasOwnerAccessControl {
   }
   setOwner(req): (any) => any {
     return function(entity){
-      entity.owner = {userId: req.user.id}
+      entity.owner = {userId: req.user._id}
       return entity;
     }
   }
 
+  filterAfterQuery(permission:Permission):(any) => any{
+    //return (toFilter) => permission.filter(toFilter);
+    return (toFilter) => toFilter;
+  }
+
   restrictByUserOrOrganizationOwner(req){
-    return function(query){
-      query.where.or([
-        { "owner.userId" : req.user._id},
-        { "owner.organizationId": { in: req.user.organizations || []}},
-      ]);
+    return function(query): DocumentQuery<any, any>{
+      return query.where("owner.userId").eq(req.user._id);
+      // return query.or([
+      //   { "owner.userId" : req.user._id},
+      //   { "owner.organizationId": req.user.organization_id },
+      // ]);
     }
   }
 
@@ -136,16 +133,16 @@ export class HasOwnerAccessControl {
 
 export class Check {
   constructor(public isGranted?:boolean,
-    public queryBuilder?: (any) => any,
+    public applyQueryRestriction?: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>,
     public setBeforeUpdate?: (any) => any,
     public filterAfterQuery?: (any) => any){
       function nop(param){
-        l.debug(`nop: ${JSON.stringify(param)}`);
+        //l.debug(`nop: ${JSON.stringify(param)}`);
         return param;
       }
 
       this.isGranted = isGranted || false;
-      this.queryBuilder = nop;
+      this.applyQueryRestriction = nop;
       this.setBeforeUpdate = nop;
       this.filterAfterQuery = nop;
   }
