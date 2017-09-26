@@ -10,8 +10,6 @@ before_install:
 - npm i typescript -g
 install:
 - npm i
-before_script:
-- node node_modules/phantomjs-prebuilt/install.js
 script:
 - npm test
 - npm run build
