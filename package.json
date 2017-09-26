@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "clean": "rm -rf dist/",
     "precompile": "npm run clean",
     "compile": "ntsc",
@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/rhases/rhases-nodejs-commons#readme",
   "dependencies": {
+    "accesscontrol": "^1.5.4",
     "http-errors": "^1.6.2",
     "lodash": "^4.17.4",
     "pino": "^4.6.0",
@@ -37,11 +38,19 @@
     "typescript": "^2.4.2"
   },
   "devDependencies": {
+    "@types/chai": "^4.0.4",
     "@types/express": "^4.0.36",
+    "@types/mocha": "^2.2.43",
     "@types/mongoose": "^4.7.19",
-    "q": "^1.5.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "express": "4.x",
+    "mocha": "^3.5.3",
+    "mongoose": "4.x",
     "ntypescript": "^1.201706190042.1",
-    "standard-version": "^3.0.0"
+    "q": "^1.5.0",
+    "standard-version": "^3.0.0",
+    "ts-node": "^3.2.0"
   },
   "peerDependencies": {
     "express": "4.x",
