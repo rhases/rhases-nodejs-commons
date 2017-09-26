@@ -5,10 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "ntsc": "node_modules/.bin/ntsc",
     "test": "mocha -r ts-node/register src/**/*.spec.ts",
     "clean": "rm -rf dist/",
     "precompile": "npm run clean",
-    "compile": "ntsc",
+    "compile": "npm run ntsc",
     "prepublish": "npm run compile",
     "release": "standard-version"
   },
