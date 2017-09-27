@@ -6,6 +6,11 @@ var Q = require('q');
 import l from '../logger';
 var _ = require("lodash");
 
+export function findEntityById(model: Model<Document>, id) {
+  return model.findById(id)
+    .exec()
+}
+
 export function applyUpdate(updates) {
   return function (entity) {
     if (!entity) return;
@@ -62,7 +67,16 @@ export function createEntity(model: Model<Document>) {
   }
 }
 
-export function findEntityById(model: Model<Document>, id) {
-  return model.findById(id)
-    .exec()
+export function setUserOwner(req): (any) => any {
+  return function(entity){
+    entity.owner = {userId: req.user._id}
+    return entity;
+  }
+}
+
+export function setOrganizationOwner(req): (any) => any {
+  return function(entity){
+    entity.owner = {organizationId: req.user.organization.ref}
+    return entity;
+  }
 }

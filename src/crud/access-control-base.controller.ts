@@ -5,12 +5,14 @@ var Q = require('q');
 import  { CrudAccessControl } from './access-control.authorization';
 import { handleEntityNotFound, respondWithResult, handleError , successMessageResult} from '../utils/controller.utils';
 
-import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity}  from '../utils/entity.utils';
-import  { createQueryExecutor, execFindAndCound, execFindByIdWithQueryBuilder } from '../utils/base.query-builder';
+import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity, setUserOwner, setOrganizationOwner}  from '../utils/entity.utils';
+import  { createQueryExecutor, execFindAndCound, execFindByIdWithQueryBuilder, restrictByUserOrOrganizationOwner } from '../utils/base.query-builder';
 
 import { Request, Response } from 'express';
 import { Model, Document, DocumentQuery } from 'mongoose';
-import { AccessControl } from 'accesscontrol';
+
+import { ifGranted, assertGranted} from '../utils/promise-grants.utils';
+
 
 export class AccessControlBaseController {
   ac:CrudAccessControl;
@@ -23,15 +25,16 @@ export class AccessControlBaseController {
     l.debug(`inited access control for ${_resource}`);
   }
 
-  create(req: Request, res: Response) {
+  create(req: any, res: Response) {
     var self = this;
-    self.ac.checkCreate(req)
-    .then(function(check){
-      return self.entityFromBody(req)
-      .then(check.setBeforeUpdate)
-      .then(createEntity(self.model))
-      .then(check.filterAfterQuery)
-    })
+    var permission = self.ac.check(req.user, 'create');
+
+    return assertGranted(permission)
+    .then(self.entityFromBody(req))
+    .then(ifGranted('own', 'user', permission, setUserOwner))
+    .then(ifGranted('own', 'organization', permission, setOrganizationOwner))
+    .then(createEntity(self.model))
+    .then(permission.filter)
     .then(respondWithResult(res))
     .catch(handleError(res))
 
@@ -39,64 +42,63 @@ export class AccessControlBaseController {
 
   find(req: any, res: Response) {
     var self = this;
-    self.ac.checkRead(req)
-    .then(function(check){
-      return createQueryExecutor(self.model, check.applyQueryRestriction)
-      .then(execFindAndCound(req.query, res))
-      .then(check.filterAfterQuery)
-    })
+    var permission = self.ac.check(req.user, 'read');
+
+    return assertGranted(permission)
+    .then(createQueryExecutor(self.model, restrictByUserOrOrganizationOwner(req.user)))
+    .then(execFindAndCound(req.query, res))
+    .then(permission.filter)
     .then(respondWithResult(res))
     .catch(handleError(res))
   }
 
-  findById(req: Request, res: Response){
+  findById(req: any, res: Response){
     var self = this;
-    self.ac.checkRead(req)
-    .then(function(check){
-      return execFindByIdWithQueryBuilder(self.model, req.params.id, check.applyQueryRestriction)
-      .then(handleEntityNotFound(res))
-      .then(check.filterAfterQuery)
-    })
+    var permission = self.ac.check(req.user, 'read');
+
+    return assertGranted(permission)
+    .then(execFindByIdWithQueryBuilder(self.model, req.params.id, restrictByUserOrOrganizationOwner(req.user)))
+    .then(handleEntityNotFound(res))
+    .then(permission.filter)
     .then(respondWithResult(res))
     .catch(handleError(res))
   }
 
-  update(req: Request, res: Response) {
+  update(req: any, res: Response) {
     var self = this;
-    self.ac.checkUpdate(req)
-    .then(function(check){
-      return execFindByIdWithQueryBuilder(self.model, req.params.id, check.applyQueryRestriction)
-      .then(handleEntityNotFound(res))
-      .then(applyUpdate(req.body))
-      .then(check.filterAfterQuery)
-    })
+    var permission = self.ac.check(req.user, 'update');
+
+    return assertGranted(permission)
+    .then(execFindByIdWithQueryBuilder(self.model, req.params.id, restrictByUserOrOrganizationOwner(req.user)))
+    .then(handleEntityNotFound(res))
+    .then(permission.filter)
+    .then(applyUpdate(req.body))
     .then(respondWithResult(res))
     .catch(handleError(res))
   }
 
-  patch(req: Request, res: Response) {
+  patch(req: any, res: Response) {
     var self = this;
-    self.ac.checkUpdate(req)
-    .then(function(check){
-      return execFindByIdWithQueryBuilder(self.model, req.params.id, check.applyQueryRestriction)
-      .then(handleEntityNotFound(res))
-      .then(applyPatch(req.body))
-      .then(check.filterAfterQuery)
-    })
+    var permission = self.ac.check(req.user, 'update');
+
+    return assertGranted(permission)
+    .then(execFindByIdWithQueryBuilder(self.model, req.params.id, restrictByUserOrOrganizationOwner(req.user)))
+    .then(handleEntityNotFound(res))
+    .then(applyPatch(req.body))
     .then(respondWithResult(res))
     .catch(handleError(res))
+
   }
 
-  remove(req: Request, res: Response, model: Model<Document>) {
-    //contruct query
+  remove(req: any, res: Response) {
     var self = this;
-    self.ac.checkUpdate(req)
-    .then(function(check){
-      return execFindByIdWithQueryBuilder(self.model, req.params.id, check.applyQueryRestriction)
-        .then(handleEntityNotFound(res))
-        .then(removeEntity())
-        .then(successMessageResult())
-    })
+    var permission = self.ac.check(req.user, 'update');
+
+    return assertGranted(permission)
+    .then(execFindByIdWithQueryBuilder(self.model, req.params.id, restrictByUserOrOrganizationOwner(req.user)))
+    .then(handleEntityNotFound(res))
+    .then(removeEntity())
+    .then(successMessageResult())
     .then(respondWithResult(res))
     .catch(handleError(res))
   }

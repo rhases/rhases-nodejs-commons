@@ -69,3 +69,13 @@ export function execFindByIdWithQueryBuilder(model: Model<Document>, id, queryBu
   return queryBuilder(model.findById(id))
   .exec();
 }
+
+export function restrictByUserOrOrganizationOwner(req){
+  return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
+    return query.where("owner.userId").equals(req.user._id);
+    // return query.or([
+    //   { "owner.userId" : req.user._id},
+    //   { "owner.organizationId": req.user.organization_id },
+    // ]);
+  }
+}

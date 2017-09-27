@@ -60,63 +60,29 @@ describe('[Access Control]', () => {
       where:{ or: () =>{}}
     };
 
-    it('admin should be allowed to create video', () => {
-      var req = {
-        user: adminUser
-      }
-      return accessControll.checkCreate(req)
-      .then(function(check){
-          expect(check.isGranted).to.equal(true);
-          //do not overwrite owner
-          expect(check.setBeforeUpdate(videoFromThirdPary).owner.userId).to.equal('301');
-      })
+    it('admin should be allowed to create video for any', () => {
+      var permission = accessControll.check(adminUser, 'read');
+      expect(permission.granted).to.equal(true);
+      expect(permission.for).to.equal('user');
+      expect(permission.type).to.equal('any');
     });
 
     it('user should be allowed to create video of its own', () => {
-      var req = {
-        user: normalUser
-      }
-      return accessControll.checkCreate(req)
-      .then(function(check){
-          expect(check.isGranted).to.equal(true);
-          l.trace(check.setBeforeUpdate(newVideo))
-          expect(check.setBeforeUpdate(newVideo).owner.userId).to.equal('100');
-      })
-    });
 
+      var permission = accessControll.check(normalUser, 'create');
+      expect(permission.granted).to.equal(true);
+      expect(permission.for).to.equal('user');
+      expect(permission.type).to.equal('own');
+    });
+    //
     it('guest should not be allowed to create video', () => {
-      var req = {
-        user: guestUser
-      }
-
-      return accessControll.checkCreate(req)
-      .then(function(check){
-        throw new Error('test failure');
-      }).catch(function(err){
-        expect(err.message).to.equal("user has no permission to create video");
-      })
-
+      var permission = accessControll.check(guestUser, 'create');
+      expect(permission.granted).to.equal(false);
     });
-
+    //
     it('admin should be allowed to update any video', () => {
-      var req = {
-        user: adminUser
-      }
-      return accessControll.checkUpdate(req)
-      .then(function(check){
-          expect(check.isGranted).to.equal(true);
-          //expect(check.applyQueryRestriction({})).to.be.empty;
-      })
-    });
-
-    it('user should be allowed to update its own video', () => {
-      var req = {
-        user: normalUser
-      }
-      return accessControll.checkUpdate(req)
-      .then(function(check){
-          expect(check.isGranted).to.equal(true);
-      })
+      var permission = accessControll.check(adminUser, 'update');
+      expect(permission.granted).to.equal(true);
     });
 
 });
