@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import l from '../logger';
 var createError = require('http-errors');
-
+import { assertGranted } from  '../utils/promise-grants.utils';
 
 export function respondWithResult(res: Response, statusCode?:number) {
   statusCode = statusCode || 200;
@@ -42,4 +42,18 @@ export function successMessageResult(){
   return function() {
     return 'Success';
   }
+}
+
+export function baseHandle(req: any, res:Response, promisedAc, op:string, handleFnc){
+  var self = this;
+  promisedAc
+  .then(function(accessControl){
+    var permission = accessControl.check(req.user, op);
+    return assertGranted(permission);
+  })
+  .then(function(permission){
+    return handleFnc(permission, req.user);
+  })
+  .then(self.respondWithResult(res))
+  .catch(self.handleError(res))
 }

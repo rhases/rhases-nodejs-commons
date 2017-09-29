@@ -4,6 +4,8 @@ var Q = require('q');
 var createError = require('http-errors');
 import l from '../logger';
 
+
+
 export function assertGranted(permission:any){
   var defer = Q.defer();
   if(!permission.granted){

@@ -44,9 +44,10 @@ export class CrudAccessControl {
 
   getOrgRoles(user){
     var roles = [];
-    if(user.organization) {
+    if(user.organization && user.organization.ref
+        && user.organization.ref.code) {
       var org = user.organization;
-      roles.push(`${org.ref}:${org.role}`);
+      roles.push(`${org.ref.code}:${org.role}`);
     }
     return roles;
   }

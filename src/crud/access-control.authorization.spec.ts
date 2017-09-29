@@ -10,7 +10,7 @@ import l from '../logger';
 
 describe('[Access Control]', () => {
     var accessControll: CrudAccessControl;
-    var newVideo, myVideo, videoFromThirdPary, adminUser, normalUser, guestUser;
+    var newVideo, myVideo, videoFromThirdPary, adminUser, normalUser, organizationManager, guestUser;
     var queryMock;
 
     accessControll = new CrudAccessControl('video', [
@@ -24,12 +24,26 @@ describe('[Access Control]', () => {
       { role: 'user', resource: 'video', action: 'create:own', attributes: ['*'] },
       { role: 'user', resource: 'video', action: 'read:any', attributes: ['*'] },
       { role: 'user', resource: 'video', action: 'update:own', attributes: ['*'] },
-      { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] }
+      { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] },
+
+      { role: '$organization:manager', resource: 'video', action: 'create:own', attributes: ['*'] },
+      { role: '$organization:manager', resource: 'video', action: 'read:any', attributes: ['*'] },
+      { role: '$organization:manager', resource: 'video', action: 'update:own', attributes: ['*'] },
+      { role: '$organization:manager', resource: 'video', action: 'delete:own', attributes: ['*'] }
     ]);
 
     adminUser = {
       _id: '001',
       roles: ['admin']
+    };
+
+    organizationManager = {
+      _id: '001',
+      roles: ['user'],
+      organization: {
+        ref: {code:'vert'},
+        role: 'manager'
+      }
     };
 
     normalUser = {
