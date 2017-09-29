@@ -21,6 +21,10 @@ function queryAllOrgs(){
   l.trace('listing orgs');
   return Q.when([ {
     code: 'vert'
+  }, {
+    code: 'rhases'
+  },{
+    code: 'tass'
   }])
 }
 
