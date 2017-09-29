@@ -1,18 +1,19 @@
 import l from '../logger';
 
 var Q = require('q');
+var _ = require('lodash');
 
 import  { CrudAccessControl } from './access-control.authorization';
 import { handleEntityNotFound, respondWithResult, handleError , successMessageResult} from '../utils/controller.utils';
 
-import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity, setUserOwner, setOrganizationOwner}  from '../utils/entity.utils';
-import  { createQueryExecutor, execFindAndCound, execFindByIdWithQueryBuilder, restrictByUserOrOrganizationOwner } from '../utils/base.query-builder';
+import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity, setUserOwner, setOrganizationOwner, attributesFilter}  from '../utils/entity.utils';
+import  { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, restrictByUserOwner, restrictByOrganizationOwner, createFindByIdQuery, execQuery } from '../utils/base.query-builder';
 
 import { Request, Response } from 'express';
 import { Model, Document, DocumentQuery } from 'mongoose';
 
-import { ifGranted, assertGranted} from '../utils/promise-grants.utils';
-
+import { ifGrantedForUser, ifGrantedForOrganization, assertGranted, ifDefined} from '../utils/promise-grants.utils';
+import { now } from '../utils/functions.utils';
 
 export class AccessControlBaseController {
   ac:CrudAccessControl;
@@ -31,23 +32,37 @@ export class AccessControlBaseController {
 
     return assertGranted(permission)
     .then(self.entityFromBody(req))
-    .then(ifGranted('own', 'user', permission, setUserOwner))
-    .then(ifGranted('own', 'organization', permission, setOrganizationOwner))
+    .then(ifGrantedForUser(permission, setUserOwner(req.user)))
+    .then(ifGrantedForOrganization(permission, setOrganizationOwner(req.user)))
     .then(createEntity(self.model))
-    .then(permission.filter)
+    //.then(permission.filter)
     .then(respondWithResult(res))
     .catch(handleError(res))
 
   }
 
-  find(req: any, res: Response) {
+  find(req: any, res: Response, exQueryBuilder?) {
     var self = this;
     var permission = self.ac.check(req.user, 'read');
+    var stack =[];
 
     return assertGranted(permission)
-    .then(createQueryExecutor(self.model, restrictByUserOrOrganizationOwner(req.user)))
-    .then(execFindAndCound(req.query, res))
-    .then(permission.filter)
+    .then(function(){
+      return function(query){
+        return now(query)
+        .then(ifGrantedForUser(permission, restrictByUserOwner(req.user)))
+        .then(ifGrantedForOrganization(permission, restrictByOrganizationOwner(req.user)))
+        .then(ifDefined(exQueryBuilder))
+        .then(function(param){
+           l.trace(`query: ${param}`);
+           return param;
+        })
+        .value();
+      }
+    })
+    .then(createQueryExecutor(self.model))
+    .then(execFindAndCount(req.query, res))
+    //.then(attributesFilter(permission))
     .then(respondWithResult(res))
     .catch(handleError(res))
   }
@@ -57,9 +72,8 @@ export class AccessControlBaseController {
     var permission = self.ac.check(req.user, 'read');
 
     return assertGranted(permission)
-    .then(execFindByIdWithQueryBuilder(self.model, req.params.id, restrictByUserOrOrganizationOwner(req.user)))
+    .then(self.findBydId(req.params.id, req.user, permission))
     .then(handleEntityNotFound(res))
-    .then(permission.filter)
     .then(respondWithResult(res))
     .catch(handleError(res))
   }
@@ -69,9 +83,8 @@ export class AccessControlBaseController {
     var permission = self.ac.check(req.user, 'update');
 
     return assertGranted(permission)
-    .then(execFindByIdWithQueryBuilder(self.model, req.params.id, restrictByUserOrOrganizationOwner(req.user)))
+    .then(self.findBydId(req.params.id, req.user, permission))
     .then(handleEntityNotFound(res))
-    .then(permission.filter)
     .then(applyUpdate(req.body))
     .then(respondWithResult(res))
     .catch(handleError(res))
@@ -80,9 +93,10 @@ export class AccessControlBaseController {
   patch(req: any, res: Response) {
     var self = this;
     var permission = self.ac.check(req.user, 'update');
+    l.debug(req.body)
 
     return assertGranted(permission)
-    .then(execFindByIdWithQueryBuilder(self.model, req.params.id, restrictByUserOrOrganizationOwner(req.user)))
+    .then(self.findBydId(req.params.id, req.user, permission))
     .then(handleEntityNotFound(res))
     .then(applyPatch(req.body))
     .then(respondWithResult(res))
@@ -92,10 +106,10 @@ export class AccessControlBaseController {
 
   remove(req: any, res: Response) {
     var self = this;
-    var permission = self.ac.check(req.user, 'update');
+    var permission = self.ac.check(req.user, 'delete');
 
     return assertGranted(permission)
-    .then(execFindByIdWithQueryBuilder(self.model, req.params.id, restrictByUserOrOrganizationOwner(req.user)))
+    .then(self.findBydId(req.params.id, req.user, permission))
     .then(handleEntityNotFound(res))
     .then(removeEntity())
     .then(successMessageResult())
@@ -103,8 +117,17 @@ export class AccessControlBaseController {
     .catch(handleError(res))
   }
 
+  private findBydId(id, user, permission){
+    var self = this;
+    return function(){
+      return Q.when(self.model.findById(id))
+    }
+  }
+
   private entityFromBody(req){
-    let entity = req.body;
-    return Q.when(entity);
+    return function(){
+        let entity = req.body;
+        return entity;
+    }
   }
 }

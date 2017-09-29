@@ -5,6 +5,7 @@ import l from '../logger';
 var Q = require('q');
 import { Model, Document, DocumentQuery } from 'mongoose';
 import { Request, Response } from 'express';
+import { concatFunctions} from './functions.utils';
 
 export function setBasicQueries(schema){
 
@@ -18,20 +19,26 @@ export function setBasicQueries(schema){
 }
 //export var TicketSchema;
 
-export function createQueryExecutor(model: Model<Document>, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>) {
+export function createQueryExecutor(model: Model<Document>, _queryBuilder?: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>) {
   var self = this;
-  var executor: any = {};
-  executor.execCount = function () {
-    return self.execCount(model, queryBuilder);
-  };
-  executor.execFind = function (sortBy: string, currentPage: number, perPage: number) {
-    return self.execFind(model, queryBuilder, sortBy, currentPage, perPage);
+  return function(__queryBuilder?) {
+    //query builder func could be setted as param internal, external or both.
+    var queryBuilder = concatFunctions(_queryBuilder, __queryBuilder);
+    var executor: any = {};
+    executor.execCount = function () {
+      return self.execCount(model, queryBuilder);
+    };
+    executor.execFind = function (sortBy: string, currentPage: number, perPage: number) {
+      return self.execFind(model, queryBuilder, sortBy, currentPage, perPage);
+    }
+    l.trace('query executor created');
+    return executor;
   }
-  return Q.when(executor);
 }
 
-export function execFindAndCound(query:any, res: Response) {
+export function execFindAndCount(query:any, res: Response) {
   return function(queryExecutor: any) {
+    l.trace(`executing find and count ${queryExecutor}`);
     var sortBy = query.sort;
     var currentPage = query.page || 1;
     var perPage = query.per_page || 200;
@@ -48,6 +55,7 @@ export function execFindAndCound(query:any, res: Response) {
 //Query utils
 export function execCount(model: Model<Document>, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>) {
   l.info(queryBuilder, `${model.collection.collectionName}.execCount()`);
+  l.trace(typeof queryBuilder);
   return queryBuilder(model.count(null)).exec();
 }
 
@@ -64,18 +72,33 @@ export function execFind(model: Model<Document>, queryBuilder: (query: DocumentQ
 
   return query.exec();
 }
-export function execFindByIdWithQueryBuilder(model: Model<Document>, id, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>) {
-  var self = this;
-  return queryBuilder(model.findById(id))
-  .exec();
+
+export function execQuery(dQuery: DocumentQuery<any,any>){
+  return dQuery.exec();
 }
 
-export function restrictByUserOrOrganizationOwner(req){
+export function createFindByIdQuery(model:Model<Document>, id:any){
+  return function(){
+    return model.findById(id)
+  }
+}
+
+
+export function execFindByIdWithQueryBuilder(model: Model<Document>, id) {
+  return function(queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>){
+    return queryBuilder(model.findById(id))
+    .exec();
+  }
+}
+
+export function restrictByUserOwner(user){
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
-    return query.where("owner.userId").equals(req.user._id);
-    // return query.or([
-    //   { "owner.userId" : req.user._id},
-    //   { "owner.organizationId": req.user.organization_id },
-    // ]);
+    return query.where("owner.userId").equals(user._id);
+  }
+}
+
+export function restrictByOrganizationOwner(user){
+  return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
+    return query.where("owner.organizationId").equals(user.owner.organization.ref.code);
   }
 }

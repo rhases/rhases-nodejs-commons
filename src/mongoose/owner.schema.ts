@@ -4,7 +4,7 @@ var mongoose = require('mongoose');
 
 export function OwnerSchemaFactory(){
 	return new mongoose.Schema({
-	 organizationId: String,
+	 organizationCode: String,
 	 userId: String // email
  },{ _id : false });
 }

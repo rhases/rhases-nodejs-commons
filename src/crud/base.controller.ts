@@ -6,7 +6,7 @@ import { checkAuthorization } from './base.authorization';
 import { handleEntityNotFound, respondWithResult, handleError } from '../utils/controller.utils';
 
 import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity}  from '../utils/entity.utils';
-import  { createQueryExecutor, execFindAndCound } from '../utils/base.query-builder';
+import  { createQueryExecutor, execFindAndCount } from '../utils/base.query-builder';
 
 import { Request, Response } from 'express';
 import { Model, Document, DocumentQuery } from 'mongoose';
@@ -28,8 +28,9 @@ export function baseCtrlFind(req: any, res: Response, model: Model<Document>) {
 }
 
 export function baseCtrlFindWithQueryBuilder(req: Request, res: Response, model: Model<Document>, queryBuilder: (query: any) => DocumentQuery<any, any>) {
-  createQueryExecutor(model, queryBuilder)
-  .then(execFindAndCound(req.query, res))
+  Q.when()
+  .then(createQueryExecutor(model, queryBuilder))
+  .then(execFindAndCount(req.query, res))
   .then(respondWithResult(res))
   .catch(handleError(res))
 }

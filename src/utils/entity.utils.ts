@@ -5,6 +5,7 @@ var Q = require('q');
 
 import l from '../logger';
 var _ = require("lodash");
+var createError = require('http-errors');
 
 export function findEntityById(model: Model<Document>, id) {
   return model.findById(id)
@@ -40,12 +41,13 @@ export function applyPatch(patches) {
 function patchAsPromised(entity, patches){
     var def = Q.defer();
     entity.patch(patches, function callback(err, result, number) {
-      if(err) {
+      if(!err) {
+        l.trace(`patched documents ${number}`);
+        def.resolve(result.toObject())
+      }else{
         l.trace(`patch rejected ${err}`);
-        def.reject(err)
+        def.reject(createError(400, err))
       }
-      l.trace(`patched documents ${number}`);
-      def.resolve(result.toObject())
   });
   return def.promise;
 }
@@ -63,20 +65,29 @@ export function removeEntity() {
 
 export function createEntity(model: Model<Document>) {
   return function(entity){
+    l.debug('creating entity...');
+    l.debug(entity);
     return model.create(entity)
   }
 }
 
-export function setUserOwner(req): (any) => any {
+export function setUserOwner(user): (any) => any {
   return function(entity){
-    entity.owner = {userId: req.user._id}
+    l.trace('setting user as owner');
+    entity.owner = {userId: user._id}
     return entity;
   }
 }
 
-export function setOrganizationOwner(req): (any) => any {
+export function setOrganizationOwner(user): (any) => any {
   return function(entity){
-    entity.owner = {organizationId: req.user.organization.ref}
+    entity.owner = {organizationId: user.organization.ref}
     return entity;
+  }
+}
+
+export function attributesFilter(filterHolder){
+  return function(entity){
+    return filterHolder.filter(entity);
   }
 }
