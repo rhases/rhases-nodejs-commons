@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.13"></a>
+## [0.2.13](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.12...v0.2.13) (2017-09-30)
+
+
+### Bug Fixes
+
+* verifiação de permissões ([c3f7a13](https://github.com/rhases/rhases-nodejs-commons/commit/c3f7a13))
+
+
+
 <a name="0.2.12"></a>
 ## [0.2.12](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.11...v0.2.12) (2017-09-29)
 
