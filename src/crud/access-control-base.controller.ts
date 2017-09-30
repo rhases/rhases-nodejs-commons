@@ -22,8 +22,6 @@ export class AccessControlBaseController {
 
   constructor(private model: Model<Document>, grants:any){
     var _resource = model.collection.collectionName;
-
-    grants.forEach(function(grant) { grant.resource = grant.resource|| _resource});
     this.promisedAc = crudAccessControlWithOrgRolesFactory(_resource, grants);
     l.debug(`inited access control for ${_resource}`);
   }
@@ -64,7 +62,7 @@ export class AccessControlBaseController {
 
   findById(req: any, res: Response){
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'create', function(permission, user){
+    baseHandle(req, res, self.promisedAc, 'read', function(permission, user){
       return Q.when()
       .then(self.findBydId(req.params.id, req.user, permission))
       .then(handleEntityNotFound(res))

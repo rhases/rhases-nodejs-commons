@@ -49,7 +49,7 @@ export function baseHandle(req: any, res:Response, promisedAc, op:string, handle
   promisedAc
   .then(function(accessControl){
     var permission = accessControl.check(req.user, op);
-    return assertGranted(permission);
+    return assertGranted(permission)
   })
   .then(function(permission){
     return handleFnc(permission, req.user);

@@ -8,11 +8,14 @@ import { Promise } from 'q';
 var Q = require('q');
 var _ = require('lodash');
 
-export function crudAccessControlWithOrgRolesFactory(resource?, grants?):Promise<CrudAccessControl>{
+export function crudAccessControlWithOrgRolesFactory(resource, grants):Promise<CrudAccessControl>{
   if(!resource || !grants) throw Error('missing parameters');
-
+  var thisGrants = _.cloneDeep(grants);
+  thisGrants.forEach(function(grant) { grant.resource = grant.resource|| resource});
+  l.warn('--------------####');
+  l.warn(thisGrants[0].resource)
   return queryAllOrgs()
-  .then(expandGrantsListRules(grants))
+  .then(expandGrantsListRules(thisGrants))
   .then(instantiateCrudAccessControl(resource))
 
 }
