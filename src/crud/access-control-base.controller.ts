@@ -45,7 +45,7 @@ export class AccessControlBaseController {
       .then(function(){
         return function(query){
           return now(query)
-          .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, req.user)))
+          .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, user.organization.ref.code)))
           .then(ifDefined(exQueryBuilder))
           .then(function(param){
              l.trace(`query: ${param}`);

@@ -91,14 +91,14 @@ export function execFindByIdWithQueryBuilder(model: Model<Document>, id) {
   }
 }
 
-export function restrictByOwner(ownerTypes, userId?, organizationId?){
+export function restrictByOwner(ownerTypes, userId?, organizationCode?){
   let restrictions = [];
   if(ownerTypes.indexOf('user') >= 0 ){
     restrictions.push({ "owner.userId": userId });
   }
 
   if(ownerTypes.indexOf('organization') >= 0 ){
-    restrictions.push({ "owner.organizationId": organizationId });
+    restrictions.push({ "owner.organizationId": organizationCode});
   }
 
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
@@ -121,6 +121,6 @@ export function restrictByUserOwner(user){
 // deprecated
 export function restrictByOrganizationOwner(user){
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
-    return query.where("owner.organizationId").equals(user.owner.organization.ref.code);
+    return query.where("owner.organizationCode").equals(user.organization.ref.code);
   }
 }
