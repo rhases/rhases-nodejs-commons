@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.15"></a>
+## [0.2.15](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.14...v0.2.15) (2017-10-02)
+
+
+### Bug Fixes
+
+* restrição para organização:own ([8dd4841](https://github.com/rhases/rhases-nodejs-commons/commit/8dd4841))
+
+
+
 <a name="0.2.14"></a>
 ## [0.2.14](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.13...v0.2.14) (2017-10-02)
 
