@@ -91,12 +91,34 @@ export function execFindByIdWithQueryBuilder(model: Model<Document>, id) {
   }
 }
 
+export function restrictByOwner(ownerTypes, userId?, organizationId?){
+  let restrictions = [];
+  if(ownerTypes.indexOf('user') >= 0 ){
+    restrictions.push({ "owner.userId": userId });
+  }
+
+  if(ownerTypes.indexOf('organization') >= 0 ){
+    restrictions.push({ "owner.organizationId": organizationId });
+  }
+
+  return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
+    if(restrictions.length == 0){ return query;}
+    if(restrictions.length == 1) {
+      return query.where(restrictions[0])
+    }else{
+      return query.or(restrictions);
+    }
+  }
+}
+
+// deprecated
 export function restrictByUserOwner(user){
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
     return query.where("owner.userId").equals(user._id);
   }
 }
 
+// deprecated
 export function restrictByOrganizationOwner(user){
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
     return query.where("owner.organizationId").equals(user.owner.organization.ref.code);

@@ -23,8 +23,9 @@ describe('[Access Control]', () => {
       { role: 'admin', resource: 'video', action: 'update:any', attributes: ['*'] },
       { role: 'admin', resource: 'video', action: 'delete:any', attributes: ['*'] },
 
-      { role: 'user', resource: 'video', action: 'read:any', attributes: ['*'] },
+      { role: 'user', resource: 'video', action: 'read:own', attributes: ['*'] },
 
+      { role: '$organization:member', resource: 'video', action: 'read:own', attributes: ['*'] },
       { role: '$organization:member', resource: 'video', action: 'update:own', attributes: ['*'] },
 
       { role: '$organization:manager', resource: 'video', action: 'create:own', attributes: ['*'] },
@@ -56,34 +57,16 @@ describe('[Access Control]', () => {
       roles: ['user']
     };
 
-    newVideo = {
-      title: 'Star Wars Episode IX',
-    };
-
-    myVideo = {
-      title: 'Fight Club',
-      owner: {userId: "001"}
-    };
-
-    videoFromThirdPary = {
-      title: 'The Godfather',
-      owner: {userId: "301"}
-    };
-
-    queryMock = {
-      where:{ or: () =>{}}
-    };
-
     it('should organization manager be grant create access', () => {
       return promisedAcessControl
       .then(function(accessControll){
         return accessControll.check(organizationManager, 'create')
       })
-      .then(function(permission){
+      .then(function(grant){
         l.trace('asserting permission attrs')
-        expect(permission.granted).to.equal(true);
-        expect(permission.for).to.equal('organization');
-        expect(permission.type).to.equal('own');
+        expect(grant.granted).to.equal(true);
+        expect(grant.type).to.equal('own');
+        expect(grant.ownerTypes).to.include.members(['organization']);
       })
     });
 
@@ -92,11 +75,11 @@ describe('[Access Control]', () => {
       .then(function(accessControll){
         return accessControll.check(organizationManager, 'update')
       })
-      .then(function(permission){
+      .then(function(grant){
         l.trace('asserting permission attrs')
-        expect(permission.granted).to.equal(true);
-        expect(permission.for).to.equal('organization');
-        expect(permission.type).to.equal('own');
+        expect(grant.granted).to.equal(true);
+        expect(grant.type).to.equal('own');
+        expect(grant.ownerTypes).to.include.members(['organization']);
       })
     });
 
@@ -105,9 +88,22 @@ describe('[Access Control]', () => {
       .then(function(accessControll){
         return accessControll.check(organizationMember, 'create')
       })
-      .then(function(permission){
+      .then(function(grant){
         l.trace('asserting permission attrs')
-        expect(permission.granted).to.equal(false);
+        expect(grant.granted).to.equal(false);
+      })
+    });
+
+    it('should organization member be grant read access for user:own and organization:own', () => {
+      return promisedAcessControl
+      .then(function(accessControll){
+        return accessControll.check(organizationMember, 'read')
+      })
+      .then(function(grant){
+        l.trace('asserting permission attrs')
+        expect(grant.granted).to.equal(true);
+        expect(grant.type).to.equal('own');
+        expect(grant.ownerTypes).to.include.members(['organization', 'user']);
       })
     });
 });

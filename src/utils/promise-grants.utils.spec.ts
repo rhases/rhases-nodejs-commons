@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import * as mocha from 'mocha';
 
 import { ifGrantedForUser, ifGrantedForOrganization }  from './promise-grants.utils';
+import { Grant } from '../crud/access-control.authorization';
 
 import l from '../logger';
 
@@ -18,9 +19,7 @@ describe('[Promise Grants]', () => {
       return 4*num1;
     }
 
-    var permissionForUserMock = {
-      type:'own', for:'user'
-    }
+    var permissionForUserMock = new Grant({granted:true}, 'own', 'user');
 
     it('should return func if is granted for user', () => {
       var result = ifGrantedForUser(permissionForUserMock, double)(4)

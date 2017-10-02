@@ -75,28 +75,28 @@ describe('[Access Control]', () => {
     };
 
     it('admin should be allowed to create video for any', () => {
-      var permission = accessControll.check(adminUser, 'read');
-      expect(permission.granted).to.equal(true);
-      expect(permission.for).to.equal('user');
-      expect(permission.type).to.equal('any');
+      var grant = accessControll.check(adminUser, 'read');
+      expect(grant.granted).to.equal(true);
+      expect(grant.type).to.equal('any');
+      expect(grant.ownerTypes).to.be.empty;
     });
 
     it('user should be allowed to create video of its own', () => {
 
-      var permission = accessControll.check(normalUser, 'create');
-      expect(permission.granted).to.equal(true);
-      expect(permission.for).to.equal('user');
-      expect(permission.type).to.equal('own');
+      var grant = accessControll.check(normalUser, 'create');
+      expect(grant.granted).to.equal(true);
+      expect(grant.type).to.equal('own');
+      expect(grant.ownerTypes).to.include.members(['user']);
     });
     //
     it('guest should not be allowed to create video', () => {
-      var permission = accessControll.check(guestUser, 'create');
-      expect(permission.granted).to.equal(false);
+      var grant = accessControll.check(guestUser, 'create');
+      expect(grant.granted).to.equal(false);
     });
     //
     it('admin should be allowed to update any video', () => {
-      var permission = accessControll.check(adminUser, 'update');
-      expect(permission.granted).to.equal(true);
+      var grant = accessControll.check(adminUser, 'update');
+      expect(grant.granted).to.equal(true);
     });
 
 });

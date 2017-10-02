@@ -9,12 +9,12 @@ import  { crudAccessControlWithOrgRolesFactory } from './access-control-with-org
 import { baseHandle,  handleEntityNotFound, respondWithResult, handleError , successMessageResult} from '../utils/controller.utils';
 
 import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity, setUserOwner, setOrganizationOwner, attributesFilter}  from '../utils/entity.utils';
-import  { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, restrictByUserOwner, restrictByOrganizationOwner, createFindByIdQuery, execQuery } from '../utils/base.query-builder';
+import  { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, restrictByOwner, createFindByIdQuery, execQuery } from '../utils/base.query-builder';
 
 import { Request, Response } from 'express';
 import { Model, Document, DocumentQuery } from 'mongoose';
 
-import { ifGrantedForUser, ifGrantedForOrganization, assertGranted, ifDefined} from '../utils/promise-grants.utils';
+import { ifGrantedForOwn, ifGrantedForUser, ifGrantedForOrganization, assertGranted, ifDefined} from '../utils/promise-grants.utils';
 import { now } from '../utils/functions.utils';
 
 export class AccessControlBaseController {
@@ -40,13 +40,12 @@ export class AccessControlBaseController {
 
   find(req: any, res: Response, exQueryBuilder?) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'read', function(permission, user){
+    baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
       return Q.when()
       .then(function(){
         return function(query){
           return now(query)
-          .then(ifGrantedForUser(permission, restrictByUserOwner(req.user)))
-          .then(ifGrantedForOrganization(permission, restrictByOrganizationOwner(req.user)))
+          .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, req.user)))
           .then(ifDefined(exQueryBuilder))
           .then(function(param){
              l.trace(`query: ${param}`);

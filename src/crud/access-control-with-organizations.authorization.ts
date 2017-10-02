@@ -2,7 +2,7 @@
 
 import l from '../logger';
 import { AccessControl, Query, Permission } from 'accesscontrol';
-import { CrudAccessControl, ExPermission } from './access-control.authorization';
+import { CrudAccessControl, Grant } from './access-control.authorization';
 import { Promise } from 'q';
 
 var Q = require('q');
