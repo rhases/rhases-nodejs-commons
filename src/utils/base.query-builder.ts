@@ -42,12 +42,13 @@ export function execFindAndCount(query:any, res: Response) {
     var sortBy = query.sort;
     var currentPage = query.page || 1;
     var perPage = query.per_page || 200;
+    var populate = query.populate || '';
 
     return queryExecutor
       .execCount()
       .then(function(totalCount:number) {
         res.set('X-Total-Count', String(totalCount));
-        return queryExecutor.execFind(sortBy, currentPage, perPage);
+        return queryExecutor.execFind(sortBy, currentPage, perPage, populate);
       })
   }
 }
@@ -59,11 +60,14 @@ export function execCount(model: Model<Document>, queryBuilder: (query: Document
   return queryBuilder(model.count(null)).exec();
 }
 
-export function execFind(model: Model<Document>, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>, sortBy: string, currentPage: number, perPage: number) {
+export function execFind(model: Model<Document>, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>, sortBy: string, currentPage: number, perPage: number, populate: string) {
   l.info(queryBuilder, `${model.collection.collectionName}.execFind()`);
   var query = queryBuilder(model.find());
   if (sortBy)
     query.sort(sortBy);
+
+  if (populate)
+    query.populate(getPopulateObject(populate));
 
   if (currentPage > 0 && perPage > 0)
     query
@@ -111,6 +115,25 @@ export function restrictByOwner(ownerTypes, userId?, organizationCode?){
   }
 }
 
+function getPopulateObject(populatePathParam) {
+  let completePaths = populatePathParam.split(',');
+  let populates = [];
+  completePaths.forEach(function(completePath) {
+    let paths = completePath.split('.');
+
+    paths.reduce(function(fieldsToPopulate, path) {
+      let p = _.find(fieldsToPopulate, { path: path })
+      if(!p) {
+        p = { path: path, populate: [] };
+        fieldsToPopulate.push(p);
+      }
+      return p.populate;
+    }, populates);
+  });
+
+  return populates;
+}
+
 // deprecated
 export function restrictByUserOwner(user){
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
@@ -124,3 +147,4 @@ export function restrictByOrganizationOwner(user){
     return query.where("owner.organizationCode").equals(user.organization.ref.code);
   }
 }
+
