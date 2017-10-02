@@ -3,6 +3,7 @@
 
 import l from '../logger';
 var Q = require('q');
+var _ = require('lodash');
 import { Model, Document, DocumentQuery } from 'mongoose';
 import { Request, Response } from 'express';
 import { concatFunctions} from './functions.utils';
@@ -28,8 +29,8 @@ export function createQueryExecutor(model: Model<Document>, _queryBuilder?: (que
     executor.execCount = function () {
       return self.execCount(model, queryBuilder);
     };
-    executor.execFind = function (sortBy: string, currentPage: number, perPage: number) {
-      return self.execFind(model, queryBuilder, sortBy, currentPage, perPage);
+    executor.execFind = function (sortBy: string, currentPage: number, perPage: number, populate: string) {
+      return self.execFind(model, queryBuilder, sortBy, currentPage, perPage, populate);
     }
     l.trace('query executor created');
     return executor;
