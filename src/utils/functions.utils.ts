@@ -28,7 +28,7 @@ export function now(value, err?) {
     },
     catch:(fnc) => {
       fnc(err);
-      return now(undefined, err)
+      return now(undefined, undefined)
     } ,
     value:() => {if(err){ throw err }; return  value}
   }
