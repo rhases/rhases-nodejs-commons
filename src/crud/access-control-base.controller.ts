@@ -16,6 +16,7 @@ import { Model, Document, DocumentQuery } from 'mongoose';
 
 import { ifGrantedForOwn, ifGrantedForUser, ifGrantedForOrganization, assertGranted, ifDefined} from '../utils/promise-grants.utils';
 import { now } from '../utils/functions.utils';
+var createError = require('http-errors');
 
 export class AccessControlBaseController {
   promisedAc:Promise<CrudAccessControl>;
@@ -38,7 +39,7 @@ export class AccessControlBaseController {
   }
 
 
-  find(req: any, res: Response, exQueryBuilder?) {
+  find(req: any, res: Response, exQueryBuilder?:(DocumentQuery)=>DocumentQuery<any, any>) {
     var self = this;
     baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
       return Q.when()

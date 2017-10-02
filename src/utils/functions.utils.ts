@@ -30,7 +30,7 @@ export function now(value, err?) {
       fnc(err);
       return now(undefined, err)
     } ,
-    value:() => value
+    value:() => {if(err){ throw err }; return  value}
   }
 }
 

@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 import * as mocha from 'mocha';
 
-import { ifGrantedForUser, ifGrantedForOrganization }  from './promise-grants.utils';
+import { ifGrantedForUser, ifGrantedForOrganization, ifDefined }  from './promise-grants.utils';
 import { Grant } from '../crud/access-control.authorization';
 
 import l from '../logger';
@@ -31,4 +31,13 @@ describe('[Promise Grants]', () => {
       expect(result).to.be.equals(4)
     });
 
+    it('idDefined: should return func if defined', () => {
+      var result = ifDefined(double)(4)
+      expect(result).to.be.equals(8)
+    });
+
+    it('idDefined: should return identity if not defined', () => {
+      var result = ifDefined(undefined)(4)
+      expect(result).to.be.equals(4)
+    });
 });

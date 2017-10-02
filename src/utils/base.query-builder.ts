@@ -103,7 +103,7 @@ export function restrictByOwner(ownerTypes, userId?, organizationCode?){
   }
 
   if(ownerTypes.indexOf('organization') >= 0 ){
-    restrictions.push({ "owner.organizationId": organizationCode});
+    restrictions.push({ "owner.organizationCode": organizationCode});
   }
 
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{

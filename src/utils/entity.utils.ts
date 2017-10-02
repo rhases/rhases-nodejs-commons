@@ -81,7 +81,7 @@ export function setUserOwner(user): (any) => any {
 
 export function setOrganizationOwner(user): (any) => any {
   return function(entity){
-    entity.owner = {organizationId: user.organization.ref}
+    entity.owner = {organizationCode: user.organization.ref}
     return entity;
   }
 }
