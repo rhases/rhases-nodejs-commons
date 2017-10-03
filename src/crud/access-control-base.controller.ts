@@ -29,11 +29,11 @@ export class AccessControlBaseController {
 
   create(req: any, res: Response) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'create', function(permission, user){
+    baseHandle(req, res, self.promisedAc, 'create', function(grant, user){
       return Q.when()
       .then(self.entityFromBody(req))
-      .then(ifGrantedForUser(permission, setUserOwner(user)))
-      .then(ifGrantedForOrganization(permission, setOrganizationOwner(user)))
+      .then(ifGrantedForUser(grant, setUserOwner(user)))
+      .then(ifGrantedForOrganization(grant, setOrganizationOwner(user)))
       .then(createEntity(self.model))
     })
   }
@@ -43,37 +43,40 @@ export class AccessControlBaseController {
     var self = this;
     baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
       return Q.when()
-      .then(function(){
-        return function(query){
-          return now(query)
-          .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, user.organization.ref.code)))
-          .then(ifDefined(exQueryBuilder))
-          .then(function(param){
-             l.trace(`query: ${param}`);
-             return param;
-          })
-          .value();
-        }
-      })
+      .then(self.restrictedQueryBuilderFactory(grant, user, exQueryBuilder))
       .then(createQueryExecutor(self.model))
       .then(execFindAndCount(req.query, res))
     })
   }
 
-  findById(req: any, res: Response){
+  
+  findById(req: any, res: Response, exQueryBuilder?:(DocumentQuery)=>DocumentQuery<any, any>){
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'read', function(permission, user){
+    baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
       return Q.when()
-      .then(self.findBydId(req.params.id, req.user, permission))
+      .then(self.restrictedQueryBuilderFactory(grant, user, exQueryBuilder))
+      .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
     })
   }
 
+  restrictedQueryBuilderFactory(grant, user, exQueryBuilder) {
+    return function() {
+      var restrictedQueryBuilder = function(query) {
+        return now(query)
+        .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, user.organization && user.organization.ref.code)))
+        .then(ifDefined(exQueryBuilder))
+        .value();
+      };
+      return restrictedQueryBuilder;
+    }
+  }
+
   update(req: any, res: Response) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'update', function(permission, user){
+    baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
       return Q.when()
-      .then(self.findBydId(req.params.id, req.user, permission))
+      .then(self.findBydId(req.params.id, req.user, grant))
       .then(handleEntityNotFound(res))
       .then(applyUpdate(req.body))
     })
@@ -81,9 +84,9 @@ export class AccessControlBaseController {
 
   patch(req: any, res: Response) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'update', function(permission, user){
+    baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
       return Q.when()
-      .then(self.findBydId(req.params.id, req.user, permission))
+      .then(self.findBydId(req.params.id, req.user, grant))
       .then(handleEntityNotFound(res))
       .then(applyPatch(req.body))
     })
@@ -91,16 +94,16 @@ export class AccessControlBaseController {
 
   remove(req: any, res: Response) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'delete', function(permission, user){
+    baseHandle(req, res, self.promisedAc, 'delete', function(grant, user){
       return Q.when()
-      .then(self.findBydId(req.params.id, user, permission))
+      .then(self.findBydId(req.params.id, user, grant))
       .then(handleEntityNotFound(res))
       .then(removeEntity())
       .then(successMessageResult())
     })
   }
 
-  private findBydId(id, user, permission){
+  private findBydId(id, user, grant){
     var self = this;
     return function(){
       return Q.when(self.model.findById(id))
