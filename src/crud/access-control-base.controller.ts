@@ -32,8 +32,7 @@ export class AccessControlBaseController {
     baseHandle(req, res, self.promisedAc, 'create', function(grant, user){
       return Q.when()
       .then(self.entityFromBody(req))
-      .then(ifGrantedForUser(grant, setUserOwner(user)))
-      .then(ifGrantedForOrganization(grant, setOrganizationOwner(user)))
+      .then(self.setOwner(grant, user))
       .then(createEntity(self.model))
     })
   }
@@ -105,6 +104,17 @@ export class AccessControlBaseController {
       .then(removeEntity())
       .then(successMessageResult())
     })
+  }
+
+  private setOwner(grant, user){
+    return (entity) => {
+      l.trace('will set owner')
+      l.trace(grant);
+      now(entity)
+      .then(ifGrantedForUser(grant, setUserOwner(user)))
+      .then(ifGrantedForOrganization(grant, setOrganizationOwner(user)))
+      .value()
+    }
   }
 
   private findBydId(id, user, grant){

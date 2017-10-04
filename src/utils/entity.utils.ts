@@ -73,15 +73,17 @@ export function createEntity(model: Model<Document>) {
 
 export function setUserOwner(user): (any) => any {
   return function(entity){
+    if(!entity.owner){ entity.owner = {}; }
     l.trace('setting user as owner');
-    entity.owner = {userId: user._id}
+    entity.owner.userId = user._id;
     return entity;
   }
 }
 
 export function setOrganizationOwner(user): (any) => any {
   return function(entity){
-    entity.owner = {organizationCode: user.organization.ref}
+    if(!entity.owner){ entity.owner = {}; }
+    entity.owner.organizationCode = user.organization.ref;
     return entity;
   }
 }
