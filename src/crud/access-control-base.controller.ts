@@ -49,7 +49,7 @@ export class AccessControlBaseController {
     })
   }
 
-  
+
   findById(req: any, res: Response, exQueryBuilder?:(DocumentQuery)=>DocumentQuery<any, any>){
     var self = this;
     baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
@@ -60,11 +60,12 @@ export class AccessControlBaseController {
     })
   }
 
-  restrictedQueryBuilderFactory(grant, user, exQueryBuilder) {
+  restrictedQueryBuilderFactory(grant, user, exQueryBuilder?) {
     return function() {
       var restrictedQueryBuilder = function(query) {
+        var organizationCode  = user.organization && user.organization.ref ? user.organization.ref.code : undefined;
         return now(query)
-        .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, user.organization && user.organization.ref.code)))
+        .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, organizationCode)))
         .then(ifDefined(exQueryBuilder))
         .value();
       };
@@ -76,7 +77,8 @@ export class AccessControlBaseController {
     var self = this;
     baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
       return Q.when()
-      .then(self.findBydId(req.params.id, req.user, grant))
+      .then(self.restrictedQueryBuilderFactory(grant, user))
+      .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
       .then(applyUpdate(req.body))
     })
@@ -86,7 +88,8 @@ export class AccessControlBaseController {
     var self = this;
     baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
       return Q.when()
-      .then(self.findBydId(req.params.id, req.user, grant))
+      .then(self.restrictedQueryBuilderFactory(grant, user))
+      .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
       .then(applyPatch(req.body))
     })
@@ -96,7 +99,8 @@ export class AccessControlBaseController {
     var self = this;
     baseHandle(req, res, self.promisedAc, 'delete', function(grant, user){
       return Q.when()
-      .then(self.findBydId(req.params.id, user, grant))
+      .then(self.restrictedQueryBuilderFactory(grant, user))
+      .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
       .then(removeEntity())
       .then(successMessageResult())
