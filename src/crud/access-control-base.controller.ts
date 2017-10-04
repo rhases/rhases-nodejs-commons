@@ -110,7 +110,7 @@ export class AccessControlBaseController {
     return (entity) => {
       l.trace('will set owner')
       l.trace(grant);
-      now(entity)
+      return now(entity)
       .then(ifGrantedForUser(grant, setUserOwner(user)))
       .then(ifGrantedForOrganization(grant, setOrganizationOwner(user)))
       .value()
