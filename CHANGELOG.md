@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.21"></a>
+## [0.2.21](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.19...v0.2.21) (2017-10-04)
+
+
+
 <a name="0.2.20"></a>
 ## [0.2.20](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.19...v0.2.20) (2017-10-04)
 
