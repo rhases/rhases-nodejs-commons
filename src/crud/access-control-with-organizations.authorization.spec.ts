@@ -12,7 +12,7 @@ import { Promise } from 'q';
 
 describe('[Access Control]', () => {
     var promisedAcessControl: Promise<CrudAccessControl>;
-    var newVideo, myVideo, videoFromThirdPary, adminUser, normalUser, organizationManager, organizationMember, guestUser;
+    var newVideo, myVideo, videoFromThirdPary, adminUser, normalUser, organizationManager, organizationOtherRole, organizationMember, guestUser;
     var queryMock;
 
     promisedAcessControl = crudAccessControlWithOrgRolesFactory('video', [
@@ -40,6 +40,15 @@ describe('[Access Control]', () => {
       organization: {
         ref: {code:'vert'},
         role: 'manager'
+      }
+    };
+
+    organizationOtherRole = {
+      _id: '0010',
+      roles: ['user'],
+      organization: {
+        ref: {code:'vert'},
+        role: 'other1'
       }
     };
 

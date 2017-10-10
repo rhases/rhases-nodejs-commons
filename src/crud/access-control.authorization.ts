@@ -17,25 +17,27 @@ export class CrudAccessControl {
     var _ac = this.ac;
     //check for `any` clearence: the user has accesss to any document in the target collection
     var grant:Grant;
-    l.trace(`check can ${user.roles} ${op}Any for ${this.resource}`)
-    var anyPermission = this.doCheck(_ac, user.roles, op, 'Any', this.resource);
+    var roles = this.filteredRoles(_ac, user.roles);
+    l.trace(`check can ${roles} ${op}Any for ${this.resource}`)
+    var anyPermission = this.doCheck(_ac, roles, op, 'Any', this.resource);
     if(anyPermission.granted){
       grant = new Grant(anyPermission, 'any');
-      grant.addVerifiedRoles(user.roles);
+      grant.addVerifiedRoles(roles);
     }else {
       //check for `own` clearence:
       var ownGrant = new Grant();
 
       ///check for `own` clearence for 'user'
-      l.trace(`check can ${user.roles} ${op}Own for ${this.resource}`)
-      var userOwnPermission = this.doCheck(_ac, user.roles, op, 'Own', this.resource);
-      ownGrant.addVerifiedRoles(user.roles);
+      l.trace(`check can ${roles} ${op}Own for ${this.resource}`)
+      var userOwnPermission = this.doCheck(_ac, roles, op, 'Own', this.resource);
+      ownGrant.addVerifiedRoles(roles);
       //check for `organization:own` clearence
       if(userOwnPermission.granted){
         ownGrant.addGrant(new Grant(userOwnPermission,'own', 'user'));
       }
       //check for 'own' clearence for 'organization'
       var orgRoles = this.getOrgRoles(user);
+      orgRoles = this.filteredRoles(_ac, orgRoles);
       l.trace(`check can ${orgRoles} ${op}Own for ${this.resource}`)
 
       var organizationOwnPermission = this.doCheck(_ac, orgRoles, op, 'Own', this.resource);
@@ -63,7 +65,14 @@ export class CrudAccessControl {
     return permission;
   };
 
-  private grantOwn
+  private grantOwn;
+
+  // remove inexistent roles
+  filteredRoles(_ac, roles) {
+    if(_.isEmpty(roles))
+      return [];
+    return roles.filter((role) => {return _ac.hasRole(role)});
+  }
 
   getOrgRoles(user){
     var roles = [];
