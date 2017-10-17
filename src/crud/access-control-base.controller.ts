@@ -29,7 +29,7 @@ export class AccessControlBaseController {
 
   create(req: any, res: Response) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'create', function(grant, user){
+    return baseHandle(req, res, self.promisedAc, 'create', function(grant, user){
       return Q.when()
       .then(self.entityFromBody(req))
       .then(self.setOwner(grant, user))
@@ -40,7 +40,7 @@ export class AccessControlBaseController {
 
   find(req: any, res: Response, exQueryBuilder?:(DocumentQuery)=>DocumentQuery<any, any>) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
+    return baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
       return Q.when()
       .then(self.restrictedQueryBuilderFactory(grant, user, exQueryBuilder))
       .then(createQueryExecutor(self.model))
@@ -51,7 +51,7 @@ export class AccessControlBaseController {
 
   findById(req: any, res: Response, exQueryBuilder?:(DocumentQuery)=>DocumentQuery<any, any>){
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
+    return baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
       return Q.when()
       .then(self.restrictedQueryBuilderFactory(grant, user, exQueryBuilder))
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
@@ -74,7 +74,7 @@ export class AccessControlBaseController {
 
   update(req: any, res: Response) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
+    return baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
       return Q.when()
       .then(self.restrictedQueryBuilderFactory(grant, user))
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
@@ -85,7 +85,7 @@ export class AccessControlBaseController {
 
   patch(req: any, res: Response) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
+    return baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
       return Q.when()
       .then(self.restrictedQueryBuilderFactory(grant, user))
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
@@ -96,7 +96,7 @@ export class AccessControlBaseController {
 
   remove(req: any, res: Response) {
     var self = this;
-    baseHandle(req, res, self.promisedAc, 'delete', function(grant, user){
+    return baseHandle(req, res, self.promisedAc, 'delete', function(grant, user){
       return Q.when()
       .then(self.restrictedQueryBuilderFactory(grant, user))
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
