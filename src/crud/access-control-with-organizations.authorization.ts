@@ -11,13 +11,16 @@ var _ = require('lodash');
 export function crudAccessControlWithOrgRolesFactory(resource, grants):Promise<CrudAccessControl>{
   if(!resource || !grants) throw Error('missing parameters');
   var thisGrants = _.cloneDeep(grants);
-  thisGrants.forEach(function(grant) { grant.resource = grant.resource|| resource});
+  thisGrants.forEach(function(grant) { grant.resource = grant.resource || resource});
   l.warn('--------------####');
   l.warn(thisGrants[0].resource)
+  return Q.when(thisGrants)
+    .then(instantiateCrudAccessControl(resource));
+  /*
   return queryAllOrgs()
   .then(expandGrantsListRules(thisGrants))
   .then(instantiateCrudAccessControl(resource))
-
+  */
 }
 
 function queryAllOrgs(){

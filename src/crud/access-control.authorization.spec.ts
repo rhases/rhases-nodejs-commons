@@ -26,8 +26,8 @@ describe('[Access Control]', () => {
       { role: 'user', resource: 'video', action: 'update:own', attributes: ['*'] },
       { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] },
 
-      { role: '$organization:manager', resource: 'video', action: 'create:own', attributes: ['*'] },
       { role: '$organization:manager', resource: 'video', action: 'read:any', attributes: ['*'] },
+      { role: '$organization:manager', resource: 'video', action: 'create:own', attributes: ['*'] },
       { role: '$organization:manager', resource: 'video', action: 'update:own', attributes: ['*'] },
       { role: '$organization:manager', resource: 'video', action: 'delete:own', attributes: ['*'] }
     ]);

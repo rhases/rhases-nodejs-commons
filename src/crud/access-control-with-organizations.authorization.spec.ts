@@ -28,8 +28,8 @@ describe('[Access Control]', () => {
       { role: '$organization:member', resource: 'video', action: 'read:own', attributes: ['*'] },
       { role: '$organization:member', resource: 'video', action: 'update:own', attributes: ['*'] },
 
+      { role: '$organization:manager', resource: 'video', action: 'read:any', attributes: ['*'] },
       { role: '$organization:manager', resource: 'video', action: 'create:own', attributes: ['*'] },
-      { role: '$organization:manager', resource: 'video', action: 'read:own', attributes: ['*'] },
       { role: '$organization:manager', resource: 'video', action: 'update:own', attributes: ['*'] },
       { role: '$organization:manager', resource: 'video', action: 'delete:own', attributes: ['*'] }
     ]);
@@ -65,6 +65,18 @@ describe('[Access Control]', () => {
       _id: '100',
       roles: ['user']
     };
+
+    it('should organization manager be grant read any', () => {
+      return promisedAcessControl
+      .then(function(accessControll){
+        return accessControll.check(organizationManager, 'read')
+      })
+      .then(function(grant){
+        l.trace('asserting permission attrs')
+        expect(grant.granted).to.equal(true);
+        expect(grant.type).to.equal('any');
+      })
+    });
 
     it('should organization manager be grant create access', () => {
       return promisedAcessControl
