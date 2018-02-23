@@ -34,28 +34,28 @@ function queryAllOrgs(){
   }])
 }
 
-function expandGrantsListRules(grants){
-  return function(organizations:Array<any> ){
-    l.trace('expanding grants');
-    return grants.reduce(function(acc, grant){
-      if( _.startsWith(grant.role, '$organization') ){
-        l.trace('grant to be expanded');
-        var orgRole = grant.role.slice('$organizationa'.length);
-        var grunts = organizations.map(function(organization){
-          var newGrant = _.clone(grant);
-          newGrant.role = `${organization.code}:${orgRole}`;
-          l.trace(`grants added with role ${newGrant.role}`);
-          return newGrant;
-        })
-        acc = _.concat(acc, grunts)
-      }else {
-        l.trace(`grants added as is '${grant.role}'`);
-        acc.push(grant);
-      }
-      return acc;
-    }, [])
-  }
-}
+// function expandGrantsListRules(grants){
+//   return function(organizations:Array<any> ){
+//     l.trace('expanding grants');
+//     return grants.reduce(function(acc, grant){
+//       if( _.startsWith(grant.role, '$organization') ){
+//         l.trace('grant to be expanded');
+//         var orgRole = grant.role.slice('$organization:'.length);
+//         var grunts = organizations.map(function(organization){
+//           var newGrant = _.clone(grant);
+//           newGrant.role = `${organization.code}:${orgRole}`;
+//           l.trace(`grants added with role ${newGrant.role}`);
+//           return newGrant;
+//         })
+//         acc = _.concat(acc, grunts)
+//       }else {
+//         l.trace(`grants added as is '${grant.role}'`);
+//         acc.push(grant);
+//       }
+//       return acc;
+//     }, [])
+//   }
+// }
 
 function instantiateCrudAccessControl(resource){
   return function(grants){

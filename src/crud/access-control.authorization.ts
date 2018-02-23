@@ -13,10 +13,10 @@ export class CrudAccessControl {
     this.ac = new AccessControl(grants);
   }
 
-  check(user:any, op:string):Grant{
+  check(user: any, op: string): Grant {
     var _ac = this.ac;
     //check for `any` clearence: the user has accesss to any document in the target collection
-    var grant:Grant;
+    var grant: Grant;
     var roles = this.filteredRoles(_ac, user.roles);
 
     var orgRoles = this.getOrgRoles(user);
@@ -25,10 +25,11 @@ export class CrudAccessControl {
     l.trace(`check can ${roles} ${op}Any for ${this.resource}`)
     var anyRoles = roles.concat(orgRoles);
     var anyPermission = this.doCheck(_ac, anyRoles, op, 'Any', this.resource);
-    if(anyPermission.granted){
+
+    if (anyPermission.granted) {
       grant = new Grant(anyPermission, 'any');
       grant.addVerifiedRoles(anyRoles);
-    }else {
+    } else {
       //check for `own` clearence:
       var ownGrant = new Grant();
 
@@ -37,18 +38,18 @@ export class CrudAccessControl {
       var userOwnPermission = this.doCheck(_ac, roles, op, 'Own', this.resource);
       ownGrant.addVerifiedRoles(roles);
       //check for `organization:own` clearence
-      if(userOwnPermission.granted){
-        ownGrant.addGrant(new Grant(userOwnPermission,'own', 'user'));
+      if (userOwnPermission.granted) {
+        ownGrant.addGrant(new Grant(userOwnPermission, 'own', 'user'));
       }
 
       //check for 'own' clearence for 'organization'
       l.trace(`check can ${orgRoles} ${op}Own for ${this.resource}`)
       var organizationOwnPermission = this.doCheck(_ac, orgRoles, op, 'Own', this.resource);
-      if(organizationOwnPermission.granted){
-        ownGrant.addGrant(new Grant(organizationOwnPermission,'own', 'organization'));
+      if (organizationOwnPermission.granted) {
+        ownGrant.addGrant(new Grant(organizationOwnPermission, 'own', 'organization'));
       }
 
-      if(ownGrant.granted){
+      if (ownGrant.granted) {
         grant = ownGrant;
       } else {
         grant = new Grant(); /* granted false */
@@ -57,13 +58,13 @@ export class CrudAccessControl {
     return grant;
   }
 
-  private doCheck(_ac, roles, op, type, resource):Permission{
+  private doCheck(_ac, roles, op, type, resource): Permission {
     var permission;
     try {
-      permission = _ac.can(roles)[op+type](resource)
-    }catch(err){
+      permission = _ac.can(roles)[op + type](resource)
+    } catch (err) {
       l.warn(err.message);
-      permission = {granted:false};
+      permission = { granted: false };
     }
     return permission;
   };
@@ -78,14 +79,15 @@ export class CrudAccessControl {
   }
 
   getOrgRoles(user){
-    var roles = [];
-    if(user.organization && user.organization.ref
-        && user.organization.ref.code) {
-      var org = user.organization;
-      roles.push(`${org.ref.code}:${org.role}`);
-      roles.push(`$organization:${org.role}`);
-    }
-    return roles;
+    var orgRoles = [];
+
+    orgRoles = orgRoles.concat(
+      _.uniq(user.roles
+        .filter(function(role) { return role.indexOf('$organization') == 0; })
+        .map(function (role) { return role.replace('$organization:.*:', ''); }))
+    );
+
+    return orgRoles;
   }
 
 }

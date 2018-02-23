@@ -62,9 +62,12 @@ export class AccessControlBaseController {
   restrictedQueryBuilderFactory(grant, user, exQueryBuilder?) {
     return function() {
       var restrictedQueryBuilder = function(query) {
-        var organizationCode  = user.organization && user.organization.ref ? user.organization.ref.code : undefined;
+        var organizationCodes = user.roles
+          .filter(function(role) { return role.indexOf('$organization') == 0; })
+          .map(function (role) { return role.replace('$organization:', '').replace(':.*$', ''); });
+
         return now(query)
-        .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, organizationCode)))
+        .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, organizationCodes)))
         .then(ifDefined(exQueryBuilder))
         .value();
       };
@@ -112,7 +115,7 @@ export class AccessControlBaseController {
       l.trace(grant);
       return now(entity)
       .then(ifGrantedForUser(grant, setUserOwner(user)))
-      .then(ifGrantedForOrganization(grant, setOrganizationOwner(user)))
+      // .then(ifGrantedForOrganization(grant, setOrganizationOwner(user))) // TODO: will not work anymore. need to be revised!!!
       .value()
     }
   }
