@@ -84,7 +84,7 @@ export class CrudAccessControl {
     orgRoles = orgRoles.concat(
       _.uniq(user.roles
         .filter(function(role) { return role.indexOf('$organization') == 0; })
-        .map(function (role) { return role.replace('$organization:.*:', ''); }))
+        .map(function (role) { return role.replace(/:.*:/, ':'); }))
     );
 
     return orgRoles;

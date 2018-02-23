@@ -64,7 +64,7 @@ export class AccessControlBaseController {
       var restrictedQueryBuilder = function(query) {
         var organizationCodes = user.roles
           .filter(function(role) { return role.indexOf('$organization') == 0; })
-          .map(function (role) { return role.replace('$organization:', '').replace(':.*$', ''); });
+          .map(function (role) { return role.replace('$organization:', '').replace(/:.*$/, ''); });
 
         return now(query)
         .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, organizationCodes)))
