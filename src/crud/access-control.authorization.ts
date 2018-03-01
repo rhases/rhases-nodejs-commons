@@ -16,11 +16,16 @@ export class CrudAccessControl {
   check(user: any, op: string): Grant {
     var _ac = this.ac;
     //check for `any` clearence: the user has accesss to any document in the target collection
+    l.trace(`all roles of user: ${user.roles}`)
+
     var grant: Grant;
     var roles = this.filteredRoles(_ac, user.roles);
+    l.trace(`filtered user roles: ${roles}`)
 
     var orgRoles = this.getOrgRoles(user);
+    l.trace(`org roles: ${orgRoles}`)
     orgRoles = this.filteredRoles(_ac, orgRoles);
+    l.trace(`filtered org roles: ${orgRoles}`)
 
     l.trace(`check can ${roles} ${op}Any for ${this.resource}`)
     var anyRoles = roles.concat(orgRoles);
@@ -34,7 +39,7 @@ export class CrudAccessControl {
       var ownGrant = new Grant();
 
       ///check for `own` clearence for 'user'
-      l.trace(`check can ${roles} ${op}Own for ${this.resource}`)
+      l.trace(`check can '${roles}' ${op}Own for ${this.resource}`)
       var userOwnPermission = this.doCheck(_ac, roles, op, 'Own', this.resource);
       ownGrant.addVerifiedRoles(roles);
       //check for `organization:own` clearence
@@ -43,7 +48,7 @@ export class CrudAccessControl {
       }
 
       //check for 'own' clearence for 'organization'
-      l.trace(`check can ${orgRoles} ${op}Own for ${this.resource}`)
+      l.trace(`check can '${orgRoles}' ${op}Own for ${this.resource}`)
       var organizationOwnPermission = this.doCheck(_ac, orgRoles, op, 'Own', this.resource);
       if (organizationOwnPermission.granted) {
         ownGrant.addGrant(new Grant(organizationOwnPermission, 'own', 'organization'));
