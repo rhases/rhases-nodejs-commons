@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.0.1"></a>
+## [1.0.1](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.21...v1.0.1) (2018-08-23)
+
+
+### Bug Fixes
+
+* issue creating entity ([1112b52](https://github.com/rhases/rhases-nodejs-commons/commit/1112b52))
+
+
+
 <a name="0.2.22"></a>
 ## [0.2.22](https://github.com/rhases/rhases-nodejs-commons/compare/v0.2.21...v0.2.22) (2017-10-04)
 
