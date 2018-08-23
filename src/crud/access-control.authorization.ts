@@ -13,66 +13,86 @@ export class CrudAccessControl {
     this.ac = new AccessControl(grants);
   }
 
-  check(user:any, op:string):Grant{
+  check(user: any, op: string): Grant {
     var _ac = this.ac;
     //check for `any` clearence: the user has accesss to any document in the target collection
-    var grant:Grant;
-    l.trace(`check can ${user.roles} ${op}Any for ${this.resource}`)
-    var anyPermission = this.doCheck(_ac, user.roles, op, 'Any', this.resource);
-    if(anyPermission.granted){
+    l.trace(`all roles of user: ${user.roles}`)
+
+    var grant: Grant;
+    var roles = this.filteredRoles(_ac, user.roles);
+    l.trace(`filtered user roles: ${roles}`)
+
+    var orgRoles = this.getOrgRoles(user);
+    l.trace(`org roles: ${orgRoles}`)
+    orgRoles = this.filteredRoles(_ac, orgRoles);
+    l.trace(`filtered org roles: ${orgRoles}`)
+
+    l.trace(`check can ${roles} ${op}Any for ${this.resource}`)
+    var anyRoles = roles.concat(orgRoles);
+    var anyPermission = this.doCheck(_ac, anyRoles, op, 'Any', this.resource);
+
+    if (anyPermission.granted) {
       grant = new Grant(anyPermission, 'any');
-      grant.addVerifiedRoles(user.roles);
-    }else {
+      grant.addVerifiedRoles(anyRoles);
+    } else {
       //check for `own` clearence:
       var ownGrant = new Grant();
 
       ///check for `own` clearence for 'user'
-      l.trace(`check can ${user.roles} ${op}Own for ${this.resource}`)
-      var userOwnPermission = this.doCheck(_ac, user.roles, op, 'Own', this.resource);
-      ownGrant.addVerifiedRoles(user.roles);
+      l.trace(`check can '${roles}' ${op}Own for ${this.resource}`)
+      var userOwnPermission = this.doCheck(_ac, roles, op, 'Own', this.resource);
+      ownGrant.addVerifiedRoles(roles);
       //check for `organization:own` clearence
-      if(userOwnPermission.granted){
-        ownGrant.addGrant(new Grant(userOwnPermission,'own', 'user'));
+      if (userOwnPermission.granted) {
+        ownGrant.addGrant(new Grant(userOwnPermission, 'own', 'user'));
       }
+
       //check for 'own' clearence for 'organization'
-      var orgRoles = this.getOrgRoles(user);
-      l.trace(`check can ${orgRoles} ${op}Own for ${this.resource}`)
-
+      l.trace(`check can '${orgRoles}' ${op}Own for ${this.resource}`)
       var organizationOwnPermission = this.doCheck(_ac, orgRoles, op, 'Own', this.resource);
-      if(organizationOwnPermission.granted){
-        ownGrant.addGrant(new Grant(organizationOwnPermission,'own', 'organization'));
+      if (organizationOwnPermission.granted) {
+        ownGrant.addGrant(new Grant(organizationOwnPermission, 'own', 'organization'));
       }
 
-      if(ownGrant.granted){
+      if (ownGrant.granted) {
         grant = ownGrant;
-      }else {
+      } else {
         grant = new Grant(); /* granted false */
       }
     }
     return grant;
   }
 
-  private doCheck(_ac, roles, op, type, resource):Permission{
+  private doCheck(_ac, roles, op, type, resource): Permission {
     var permission;
     try {
-      permission = _ac.can(roles)[op+type](resource)
-    }catch(err){
+      permission = _ac.can(roles)[op + type](resource)
+    } catch (err) {
       l.warn(err.message);
-      permission = {granted:false};
+      permission = { granted: false };
     }
     return permission;
   };
 
-  private grantOwn
+  private grantOwn;
+
+  // remove inexistent roles
+  filteredRoles(_ac, roles) {
+    if(_.isEmpty(roles))
+      return [];
+    return roles.filter((role) => {return _ac.hasRole(role)});
+  }
 
   getOrgRoles(user){
-    var roles = [];
-    if(user.organization && user.organization.ref
-        && user.organization.ref.code) {
-      var org = user.organization;
-      roles.push(`${org.ref.code}:${org.role}`);
-    }
-    return roles;
+    var orgRoles = [];
+
+    orgRoles = orgRoles.concat(
+      _.uniq(user.roles
+        .filter(function(role) { return role.indexOf('$organization') == 0; })
+        .map(function (role) { return role.replace(/:.*:/, ':'); }))
+    );
+
+    return orgRoles;
   }
 
 }

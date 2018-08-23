@@ -96,14 +96,14 @@ export function execFindByIdWithQueryBuilder(model: Model<Document>, id) {
   }
 }
 
-export function restrictByOwner(ownerTypes, userId?, organizationCode?){
+export function restrictByOwner(ownerTypes, userId?, organizationCodes?){
   let restrictions = [];
   if(ownerTypes.indexOf('user') >= 0 ){
     restrictions.push({ "owner.userId": userId });
   }
 
   if(ownerTypes.indexOf('organization') >= 0 ){
-    restrictions.push({ "owner.organizationCode": organizationCode});
+    restrictions.push({ "owner.organizationCode": { $in: organizationCodes }});
   }
 
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
@@ -117,10 +117,17 @@ export function restrictByOwner(ownerTypes, userId?, organizationCode?){
 }
 
 function getPopulateObject(populatePathParam) {
-  let completePaths = populatePathParam.split(',');
+  let completePaths = populatePathParam
+    .split(',')
+    .map((s) => s.trim());
+    
   let populates = [];
   completePaths.forEach(function(completePath) {
-    let paths = completePath.split('.');
+    let paths = escapeInsideDots(completePath) // escape dots inside brakets ('xxx.[kkk.zzz]' => 'xxx.[kkk*zzz]')
+        .split('.') // ('xxx.[kkk*zzz]' => ['xxx', '[kkk*zzz]'])
+        .map((s) => s.replace('*', '.')) // unscape dots (['xxx', '[kkk*zzz]'] => ['xxx', '[kkk.zzz]'])
+        .map((s) => s.replace(/[\[\]]/g, '')) // remove brakets (['xxx', '[kkk.zzz]'] => ['xxx', 'kkk.zzz'])
+        
 
     paths.reduce(function(fieldsToPopulate, path) {
       let p = _.find(fieldsToPopulate, { path: path })
@@ -133,6 +140,22 @@ function getPopulateObject(populatePathParam) {
   });
 
   return populates;
+}
+
+function escapeInsideDots(path) {
+    if (!path) return;
+    var insideBrackets = false;
+    var escapedPath = "";
+    for(var i = 0; i < path.length; i++) {
+        var c = path[i];
+        if (c == '[') insideBrackets = true;
+        if (c == ']') insideBrackets = false;        
+        
+        if (c == '.' && insideBrackets == true) c = '*';
+        
+        escapedPath += c;
+    }
+    return escapedPath;
 }
 
 // deprecated

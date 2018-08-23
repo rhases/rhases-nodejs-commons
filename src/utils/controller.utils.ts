@@ -10,6 +10,7 @@ export function respondWithResult(res: Response, operation?:string) {
     if (entity) {
       res.status(statusCode).json(entity);
     }
+    return entity;
   };
 }
 
@@ -34,6 +35,7 @@ export function handleError(res:any, statusCode?:number) {
     if(err.name === 'ValidationError')
       statusCode = 400;
     res.status(statusCode).send(err);
+    throw err;
   };
 }
 
@@ -45,14 +47,14 @@ export function successMessageResult(){
 
 export function baseHandle(req: any, res:Response, promisedAc, op:string, handleFnc){
   var self = this;
-  promisedAc
-  .then(function(accessControl){
-    var permission = accessControl.check(req.user, op);
-    return assertGranted(permission)
-  })
-  .then(function(permission){
-    return handleFnc(permission, req.user);
-  })
-  .then(self.respondWithResult(res, op))
-  .catch(self.handleError(res))
+  return promisedAc
+    .then(function(accessControl){
+      var permission = accessControl.check(req.user, op);
+      return assertGranted(permission)
+    })
+    .then(function(permission){
+      return handleFnc(permission, req.user);
+    })
+    .then(self.respondWithResult(res, op))
+    .catch(self.handleError(res))
 }
