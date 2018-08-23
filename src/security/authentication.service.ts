@@ -37,8 +37,10 @@ export function authenticate(req, res) {
 }
 
 function queryMe(req) {
+	const uri = process.env.AUTHENTICATOR_URI ||
+		req.protocol + '://' + req.get('host'); //same server
 	return Q.nfcall(request.get,  {
-			url: process.env.AUTHENTICATOR_URI + "/api/users/me",
+		url: uri + "/api/users/me",
 			headers: { authorization: req.headers.authorization },
 			json: true,
 		})
@@ -95,5 +97,5 @@ export function getUserInfomations(email) {
 	if(process.env.AUTHENTICATOR_URI)
 		l.debug('using ' + process.env.AUTHENTICATOR_URI + ' to authentication');
 	else
-		l.error('no AUTH_URI setted in the environment');
+		l.error('no AUTHENTICATOR_URI setted in the environment');
 })();

@@ -16,7 +16,7 @@ export function baseCtrlCreate(req: Request, res: Response, model: Model<Documen
   entityFromBody(req, options && options.setUser)
   .then(checkAuthorization('create', req))
   .then(createEntity(model))
-  .then(respondWithResult(res))
+  .then(respondWithResult(res, 'create'))
   .catch(handleError(res))
 }
 
