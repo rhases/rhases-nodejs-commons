@@ -3,7 +3,7 @@ import l from '../logger';
 var Q = require('q');
 
 import { checkAuthorization } from './base.authorization';
-import { handleEntityNotFound, respondWithResult, handleError } from '../utils/controller.utils';
+import { handleEntityNotFound, handleEntityNotFoundEmpyList, respondWithResult, handleError } from '../utils/controller.utils';
 
 import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity}  from '../utils/entity.utils';
 import  { createQueryExecutor, execFindAndCount } from '../utils/base.query-builder';
@@ -35,6 +35,15 @@ export function baseCtrlFindWithQueryBuilder(req: Request, res: Response, model:
   .catch(handleError(res))
 }
 
+export function baseCtrlFindOneWithQueryBuilder(req: Request, res: Response, model: Model<Document>, queryBuilder: (query: any) => DocumentQuery<any, any>) {
+  Q.when()
+    .then(createQueryExecutor(model, queryBuilder))
+    .then(execFindAndCount(req.query, res))
+    .then(handleEntityNotFoundEmpyList(res))
+    .then(respondWithResult(res))
+    .catch(handleError(res))
+}
+
 export function baseCtrlFindById(req: Request, res: Response, model: Model<Document>){
   findEntityById(model, req.params.id)
   .then(handleEntityNotFound(res))
@@ -42,6 +51,9 @@ export function baseCtrlFindById(req: Request, res: Response, model: Model<Docum
   .then(respondWithResult(res))
   .catch(handleError(res))
 }
+
+
+
 
 export function baseCtrlUpdate(req: Request, res: Response, model: Model<Document>) {
   //contruct query
@@ -52,6 +64,8 @@ export function baseCtrlUpdate(req: Request, res: Response, model: Model<Documen
   .then(respondWithResult(res))
   .catch(handleError(res))
 }
+
+
 
 export function baseCtrlPatch(req: Request, res: Response, model: Model<Document>) {
   //contruct query

@@ -46,7 +46,7 @@
     "chai-as-promised": "^7.1.1",
     "express": "^4.16.3",
     "mocha": "^5.2.0",
-    "mongoose": "^4.13.15",
+    "mongoose": "^5.2.12",
     "ntypescript": "^1.201706190042.1",
     "q": "^1.5.1",
     "standard-version": "^3.0.0",
@@ -55,7 +55,7 @@
   },
   "peerDependencies": {
     "express": "4.x",
-    "mongoose": "4.x",
+    "mongoose": "5.x",
     "q": "^1.5.0"
   }
 }

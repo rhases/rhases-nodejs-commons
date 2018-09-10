@@ -17,9 +17,18 @@ export function respondWithResult(res: Response, operation?:string) {
 export function handleEntityNotFound(res: Response) {
   return function(entity: any) {
     if (!entity) {
-      throw createError(404)
+      throw createError(404);
     }
     return entity;
+  };
+}
+
+export function handleEntityNotFoundEmpyList(res) {
+  return function (result) {
+    if (!result[0]) {
+      throw createError(404);
+    }
+    return result[0];
   };
 }
 
