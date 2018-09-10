@@ -39,16 +39,21 @@ export function authenticate(req, res) {
 function queryMe(req) {
 	const uri = process.env.AUTHENTICATOR_URI ||
 		req.protocol + '://' + req.get('host'); //same server
+	const url =  uri + '/api/users/me';
 	return Q.nfcall(request.get,  {
-		url: uri + "/api/users/me",
+			url,
 			headers: { authorization: req.headers.authorization },
 			json: true,
 		})
 		.then(function(data) {
 			var response = data[0];
 			var body = data[1];
-			if (response.statusCode >= 300)
-				throw 'Can not authenticate user. Auth server response: ' + JSON.stringify(body);
+			if (response.statusCode >= 300){
+				l.warn(`[access denied] Auth server url: ${url}`);
+				l.warn(`[access denied] Auth server response: \n ${JSON.stringify(body)}`);
+				throw `Can not authenticate user.Check server for log.`; 
+			}
+				
 			return body;
 		})
 }

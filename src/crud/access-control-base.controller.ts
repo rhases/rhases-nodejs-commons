@@ -4,12 +4,12 @@ var Q = require('q');
 var _ = require('lodash');
 import { Promise } from 'q';
 
-import  { CrudAccessControl } from './access-control.authorization';
-import  { crudAccessControlWithOrgRolesFactory } from './access-control-with-organizations.authorization';
+import { CrudAccessControl } from './access-control.authorization';
+import { crudAccessControlWithOrgRolesFactory } from './access-control-with-organizations.authorization';
 import { baseHandle,  handleEntityNotFound, respondWithResult, handleError , successMessageResult} from '../utils/controller.utils';
 
 import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity, setUserOwner, setOrganizationOwner, attributesFilter}  from '../utils/entity.utils';
-import  { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, restrictByOwner, createFindByIdQuery, execQuery } from '../utils/base.query-builder';
+import { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, restrictByOwner, createFindByIdQuery, execQuery } from '../utils/base.query-builder';
 
 import { Request, Response } from 'express';
 import { Model, Document, DocumentQuery } from 'mongoose';
@@ -117,13 +117,6 @@ export class AccessControlBaseController {
       .then(ifGrantedForUser(grant, setUserOwner(user)))
       // .then(ifGrantedForOrganization(grant, setOrganizationOwner(user))) // TODO: will not work anymore. need to be revised!!!
       .value()
-    }
-  }
-
-  private findBydId(id, user, grant){
-    var self = this;
-    return function(){
-      return Q.when(self.model.findById(id))
     }
   }
 

@@ -12,8 +12,6 @@ export function crudAccessControlWithOrgRolesFactory(resource, grants):Promise<C
   if(!resource || !grants) throw Error('missing parameters');
   var thisGrants = _.cloneDeep(grants);
   thisGrants.forEach(function(grant) { grant.resource = grant.resource || resource});
-  l.warn('--------------####');
-  l.warn(thisGrants[0].resource)
   return Q.when(thisGrants)
     .then(instantiateCrudAccessControl(resource));
   /*

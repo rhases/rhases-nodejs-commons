@@ -65,8 +65,8 @@ export function removeEntity() {
 
 export function createEntity(model: Model<Document>) {
   return function(entity){
-    l.debug('creating entity...');
-    l.debug(entity);
+    l.trace('creating entity...');
+    l.trace(entity);
     return model.create(entity)
   }
 }
