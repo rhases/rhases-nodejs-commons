@@ -51,7 +51,8 @@
     "q": "^1.5.1",
     "standard-version": "^3.0.0",
     "ts-node": "^3.2.0",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "pino-pretty": "^2.2.3"
   },
   "peerDependencies": {
     "express": "4.x",

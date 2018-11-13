@@ -36,11 +36,7 @@ describe('[Access Control]', () => {
 
     organizationManager = {
       _id: '001',
-      roles: ['user'],
-      organization: {
-        ref: {code:'vert'},
-        role: 'manager'
-      }
+      roles: ['user', '$organization:vert:manager'],
     };
 
     organizationOtherRole = {
@@ -54,11 +50,7 @@ describe('[Access Control]', () => {
 
     organizationMember = {
       _id: '002',
-      roles: ['user'],
-      organization: {
-        ref: {code:'vert'},
-        role: 'member'
-      }
+      roles: ['user', '$organization:vert:member'],
     };
 
     normalUser = {
