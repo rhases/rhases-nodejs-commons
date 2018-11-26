@@ -96,6 +96,13 @@ export function execFindByIdWithQueryBuilder(model: Model<Document>, id) {
   }
 }
 
+export function execfindOneAndUpdateWithQueryBuilder(model: Model<Document>, id, update:any) {
+  return function (queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>) {
+    return queryBuilder(model.findOneAndUpdate(id, update, { new: true }))
+      .exec();
+  }
+}
+
 export function restrictByOwner(ownerTypes, userId?, organizationCodes?){
   let restrictions = [];
   if(ownerTypes.indexOf('user') >= 0 ){

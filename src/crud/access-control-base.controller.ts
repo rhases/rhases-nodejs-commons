@@ -9,7 +9,7 @@ import { crudAccessControlWithOrgRolesFactory } from './access-control-with-orga
 import { baseHandle,  handleEntityNotFound, respondWithResult, handleError , successMessageResult} from '../utils/controller.utils';
 
 import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity, setUserOwner, setOrganizationOwner, attributesFilter}  from '../utils/entity.utils';
-import { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, restrictByOwner, createFindByIdQuery, execQuery } from '../utils/base.query-builder';
+import { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, execfindOneAndUpdateWithQueryBuilder, restrictByOwner, createFindByIdQuery, execQuery } from '../utils/base.query-builder';
 
 import { Request, Response } from 'express';
 import { Model, Document, DocumentQuery } from 'mongoose';
@@ -83,6 +83,16 @@ export class AccessControlBaseController {
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
       .then(applyUpdate(req.body))
+    })
+  }
+
+  updateOp(req: any, res: Response, update:any) {
+    var self = this;
+    return baseHandle(req, res, self.promisedAc, 'update', function (grant, user) {
+      return Q.when()
+        .then(self.restrictedQueryBuilderFactory(grant, user))
+        .then(execfindOneAndUpdateWithQueryBuilder(self.model, req.params.id, update))
+        .then(handleEntityNotFound(res))
     })
   }
 
