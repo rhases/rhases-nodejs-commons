@@ -7,6 +7,7 @@ var _ = require('lodash');
 import { Model, Document, DocumentQuery } from 'mongoose';
 import { Request, Response } from 'express';
 import { concatFunctions} from './functions.utils';
+import { CallOptions } from './options';
 
 export function setBasicQueries(schema){
 
@@ -29,15 +30,15 @@ export function createQueryExecutor(model: Model<Document>, _queryBuilder?: (que
     executor.execCount = function () {
       return self.execCount(model, queryBuilder);
     };
-    executor.execFind = function (sortBy: string, currentPage: number, perPage: number, populate: string) {
-      return self.execFind(model, queryBuilder, sortBy, currentPage, perPage, populate);
+    executor.execFind = function (sortBy: string, currentPage: number, perPage: number, populate: string, isLean?: boolean) {
+      return self.execFind(model, queryBuilder, sortBy, currentPage, perPage, populate, isLean);
     }
     l.trace('query executor created');
     return executor;
   }
 }
 
-export function execFindAndCount(query:any, res: Response) {
+export function execFindAndCount(query: any, res: Response, isLean?: boolean) {
   return function(queryExecutor: any) {
     l.trace(`executing find and count ${queryExecutor}`);
     var sortBy = query.sort;
@@ -49,7 +50,7 @@ export function execFindAndCount(query:any, res: Response) {
       .execCount()
       .then(function(totalCount:number) {
         res.set('X-Total-Count', String(totalCount));
-        return queryExecutor.execFind(sortBy, currentPage, perPage, populate);
+        return queryExecutor.execFind(sortBy, currentPage, perPage, populate, isLean);
       })
   }
 }
@@ -61,7 +62,8 @@ export function execCount(model: Model<Document>, queryBuilder: (query: Document
   return queryBuilder(model.count(null)).exec();
 }
 
-export function execFind(model: Model<Document>, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>, sortBy: string, currentPage: number, perPage: number, populate: string) {
+export function execFind(model: Model<Document>, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>, 
+  sortBy: string, currentPage: number, perPage: number, populate: string, isLean?: boolean) {
   l.info(queryBuilder, `${model.collection.collectionName}.execFind()`);
   var query = queryBuilder(model.find());
   if (sortBy)
@@ -73,8 +75,8 @@ export function execFind(model: Model<Document>, queryBuilder: (query: DocumentQ
   if (currentPage > 0 && perPage > 0)
     query
       .skip((currentPage - 1) * perPage)
-      .limit(perPage);
-
+      .limit(perPage)
+      .lean(isLean);
   return query.exec();
 }
 
@@ -89,10 +91,11 @@ export function createFindByIdQuery(model:Model<Document>, id:any){
 }
 
 
-export function execFindByIdWithQueryBuilder(model: Model<Document>, id) {
+export function execFindByIdWithQueryBuilder(model: Model<Document>, id, isLean?:boolean) {
   return function(queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>){
     return queryBuilder(model.findById(id))
-    .exec();
+    .lean(isLean)
+    .exec()
   }
 }
 

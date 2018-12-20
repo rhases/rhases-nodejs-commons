@@ -2,21 +2,23 @@ import l from '../logger';
 
 var Q = require('q');
 var _ = require('lodash');
+
+import { CallOptions } from '../utils/options';
 import { Promise } from 'q';
 
 import { CrudAccessControl } from './access-control.authorization';
 import { crudAccessControlWithOrgRolesFactory } from './access-control-with-organizations.authorization';
 import { baseHandle,  handleEntityNotFound, respondWithResult, handleError , successMessageResult} from '../utils/controller.utils';
 
-import { createEntity, findEntityById, applyUpdate, applyPatch, removeEntity, setUserOwner, setOrganizationOwner, attributesFilter}  from '../utils/entity.utils';
-import { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, execfindOneAndUpdateWithQueryBuilder, restrictByOwner, createFindByIdQuery, execQuery } from '../utils/base.query-builder';
+import { createEntity, applyUpdate, applyPatch, removeEntity, setUserOwner}  from '../utils/entity.utils';
+import { createQueryExecutor, execFindAndCount, execFindByIdWithQueryBuilder, execfindOneAndUpdateWithQueryBuilder, restrictByOwner} from '../utils/base.query-builder';
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { Model, Document, DocumentQuery } from 'mongoose';
 
 import { ifGrantedForOwn, ifGrantedForUser, ifGrantedForOrganization, assertGranted, ifDefined} from '../utils/promise-grants.utils';
 import { now } from '../utils/functions.utils';
-var createError = require('http-errors');
+
 
 export class AccessControlBaseController {
   promisedAc:Promise<CrudAccessControl>;
@@ -27,36 +29,38 @@ export class AccessControlBaseController {
     l.debug(`inited access control for ${_resource}`);
   }
 
-  create(req: any, res: Response) {
+  create(req: any, res: Response, options: CallOptions) {
     var self = this;
     return baseHandle(req, res, self.promisedAc, 'create', function(grant, user){
       return Q.when()
       .then(self.entityFromBody(req))
       .then(self.setOwner(grant, user))
       .then(createEntity(self.model))
-    })
+    }, options);
   }
 
 
-  find(req: any, res: Response, exQueryBuilder?:(DocumentQuery)=>DocumentQuery<any, any>) {
+  find(req: any, res: Response, exQueryBuilder?: (DocumentQuery) => DocumentQuery<any, any>, 
+  options?: CallOptions) {
     var self = this;
     return baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
       return Q.when()
       .then(self.restrictedQueryBuilderFactory(grant, user, exQueryBuilder))
       .then(createQueryExecutor(self.model))
-      .then(execFindAndCount(req.query, res))
-    })
+      .then(execFindAndCount(req.query, res, self.isLean(options)))
+    }, options)
   }
 
 
-  findById(req: any, res: Response, exQueryBuilder?:(DocumentQuery)=>DocumentQuery<any, any>){
+  findById(req: any, res: Response, exQueryBuilder?:(DocumentQuery)=>DocumentQuery<any, any>,
+    options?: CallOptions) {
     var self = this;
     return baseHandle(req, res, self.promisedAc, 'read', function(grant, user){
       return Q.when()
       .then(self.restrictedQueryBuilderFactory(grant, user, exQueryBuilder))
-      .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
+      .then(execFindByIdWithQueryBuilder(self.model, req.params.id, options && !!options.transformOut))
       .then(handleEntityNotFound(res))
-    })
+    }, options)
   }
 
   restrictedQueryBuilderFactory(grant, user, exQueryBuilder?) {
@@ -75,7 +79,8 @@ export class AccessControlBaseController {
     }
   }
 
-  update(req: any, res: Response) {
+  update(req: any, res: Response,
+    options?: CallOptions) {
     var self = this;
     return baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
       return Q.when()
@@ -83,20 +88,20 @@ export class AccessControlBaseController {
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
       .then(applyUpdate(req.body))
-    })
+    }, options)
   }
 
-  updateOp(req: any, res: Response, update:any) {
+  updateOp(req: any, res: Response, update: any, options?: CallOptions) {
     var self = this;
     return baseHandle(req, res, self.promisedAc, 'update', function (grant, user) {
       return Q.when()
         .then(self.restrictedQueryBuilderFactory(grant, user))
         .then(execfindOneAndUpdateWithQueryBuilder(self.model, req.params.id, update))
         .then(handleEntityNotFound(res))
-    })
+    }, options)
   }
 
-  patch(req: any, res: Response) {
+  patch(req: any, res: Response, options?: CallOptions) {
     var self = this;
     return baseHandle(req, res, self.promisedAc, 'update', function(grant, user){
       return Q.when()
@@ -104,10 +109,10 @@ export class AccessControlBaseController {
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
       .then(applyPatch(req.body))
-    })
+    }, options)
   }
 
-  remove(req: any, res: Response) {
+  remove(req: any, res: Response, options?: CallOptions) {
     var self = this;
     return baseHandle(req, res, self.promisedAc, 'delete', function(grant, user){
       return Q.when()
@@ -116,7 +121,7 @@ export class AccessControlBaseController {
       .then(handleEntityNotFound(res))
       .then(removeEntity())
       .then(successMessageResult())
-    })
+    }, options)
   }
 
   private setOwner(grant, user){
@@ -128,6 +133,10 @@ export class AccessControlBaseController {
       // .then(ifGrantedForOrganization(grant, setOrganizationOwner(user))) // TODO: will not work anymore. need to be revised!!!
       .value()
     }
+  }
+
+  private isLean(options: CallOptions):boolean {
+    return options && !!options.transformOut
   }
 
   private entityFromBody(req){

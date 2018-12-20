@@ -3,8 +3,10 @@ import { Request, Response } from 'express';
 import l from '../logger';
 var createError = require('http-errors');
 import { assertGranted } from  '../utils/promise-grants.utils';
+import { CallOptions } from './options';
+var _ = require('lodash');
 
-export function respondWithResult(res: Response, operation?:string) {
+export function respondWithResult(res: Response, operation?: string) {
   const statusCode = (operation == 'create') ? 201 : 200;
   return (entity: any) => {
     if (entity) {
@@ -54,7 +56,7 @@ export function successMessageResult(){
   }
 }
 
-export function baseHandle(req: any, res:Response, promisedAc, op:string, handleFnc){
+export function baseHandle(req: any, res: Response, promisedAc, op: string, handleFnc, options?: CallOptions) {
   var self = this;
   return promisedAc
     .then(function(accessControl){
@@ -64,6 +66,7 @@ export function baseHandle(req: any, res:Response, promisedAc, op:string, handle
     .then(function(permission){
       return handleFnc(permission, req.user);
     })
+    .then(content => (options && options.transformOut) ? options.transformOut(content) : content)
     .then(self.respondWithResult(res, op))
     .catch(self.handleError(res))
 }
