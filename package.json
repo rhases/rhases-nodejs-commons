@@ -1,6 +1,6 @@
 {
   "name": "rhases-nodejs-commons",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Node.js utilities",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,8 @@
     "precompile": "npm run clean",
     "compile": "tsc",
     "prepublish": "npm run compile",
-    "release": "standard-version"
+    "release": "standard-version",
+    "release-minor": "standard-version -- --release-as minor"
   },
   "repository": {
     "type": "git",
