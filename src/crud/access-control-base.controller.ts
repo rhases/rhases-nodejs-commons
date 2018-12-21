@@ -35,6 +35,7 @@ export class AccessControlBaseController {
       return Q.when()
       .then(self.entityFromBody(req))
       .then(self.setOwner(grant, user))
+      .then(self.applyBeforeUpdateIfDefined(options))
       .then(createEntity(self.model))
     }, options);
   }
@@ -87,7 +88,9 @@ export class AccessControlBaseController {
       .then(self.restrictedQueryBuilderFactory(grant, user))
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
+      .then(self.applyBeforeUpdateIfDefined(options))
       .then(applyUpdate(req.body))
+      .then(self.applyAfterUpdateIfDefined(options))
     }, options)
   }
 
@@ -108,7 +111,9 @@ export class AccessControlBaseController {
       .then(self.restrictedQueryBuilderFactory(grant, user))
       .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
       .then(handleEntityNotFound(res))
+      .then(self.applyBeforeUpdateIfDefined(options))
       .then(applyPatch(req.body))
+      .then(self.applyAfterUpdateIfDefined(options))
     }, options)
   }
 
@@ -137,6 +142,22 @@ export class AccessControlBaseController {
 
   private isLean(options: CallOptions):boolean {
     return options && !!options.transformOut
+  }
+
+  private applyBeforeUpdateIfDefined(options?: CallOptions){
+    if (options && !!options.beforeSave) {
+      return (value) => options.beforeSave(value);
+    } else {
+      return (value) => (value);
+    }
+  }
+
+  private applyAfterUpdateIfDefined(options?: CallOptions) {
+    if (options && !!options.afterSave) {
+      return (value) => options.afterSave(value);
+    } else {
+      return (value) => (value);
+    }
   }
 
   private entityFromBody(req){

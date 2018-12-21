@@ -5,9 +5,8 @@ import l from '../logger';
 var Q = require('q');
 var _ = require('lodash');
 import { Model, Document, DocumentQuery } from 'mongoose';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { concatFunctions} from './functions.utils';
-import { CallOptions } from './options';
 
 export function setBasicQueries(schema){
 
@@ -57,14 +56,14 @@ export function execFindAndCount(query: any, res: Response, isLean?: boolean) {
 
 //Query utils
 export function execCount(model: Model<Document>, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>) {
-  l.info(queryBuilder, `${model.collection.collectionName}.execCount()`);
+  l.trace(queryBuilder, `${model.collection.collectionName}.execCount()`);
   l.trace(typeof queryBuilder);
   return queryBuilder(model.count(null)).exec();
 }
 
 export function execFind(model: Model<Document>, queryBuilder: (query: DocumentQuery<any, any>) => DocumentQuery<any, any>, 
   sortBy: string, currentPage: number, perPage: number, populate: string, isLean?: boolean) {
-  l.info(queryBuilder, `${model.collection.collectionName}.execFind()`);
+  l.trace(queryBuilder, `${model.collection.collectionName}.execFind()`);
   var query = queryBuilder(model.find());
   if (sortBy)
     query.sort(sortBy);

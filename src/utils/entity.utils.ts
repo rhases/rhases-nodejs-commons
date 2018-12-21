@@ -43,7 +43,7 @@ function patchAsPromised(entity, patches){
     entity.patch(patches, function callback(err, result, number) {
       if(!err) {
         l.trace(`patched documents ${number}`);
-        def.resolve(result.toObject())
+        def.resolve(result)
       }else{
         l.trace(`patch rejected ${err}`);
         def.reject(createError(400, err))
