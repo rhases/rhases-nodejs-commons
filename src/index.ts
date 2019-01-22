@@ -8,6 +8,7 @@ export * from './utils/base.query-builder';
 export * from './utils/controller.utils';
 export * from './utils/entity.utils';
 export * from './utils/controller.utils';
+export * from './utils/merge.util';
 
 export * from './crud/base.controller';
 export * from './crud/base.authorization';
