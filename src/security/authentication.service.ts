@@ -28,6 +28,26 @@ export function ensureIsAuthenticated(req, res, next) {
 		.done();
 };
 
+
+/**
+ * Attaches the user object to the request if authenticated
+ * Otherwise continue silently
+ */
+export function authenticatedIfCredentialProvided(req, res, next) {
+	if (!req.headers || !req.headers.authorization){
+		next();
+	} else {
+		authenticate(req, res)
+		.then(function () {
+			next();
+		})
+		.catch(function (err) {
+			next(createError(401, err))
+		})
+		.done();
+	}
+};
+
 export function authenticate(req, res) {
 	return queryMe(req)
 		.then(function(user) {
