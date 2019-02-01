@@ -42,7 +42,7 @@ export function execFindAndCount(query: any, res: Response, isLean?: boolean) {
     l.trace(`executing find and count ${queryExecutor}`);
     var sortBy = query.sort;
     var currentPage = query.page || 1;
-    var perPage = _.isNil(query.per_page) ? 200 : query.per_page;
+    var perPage = query.per_page || 200;
     var populate = query.populate || '';
 
     return queryExecutor
