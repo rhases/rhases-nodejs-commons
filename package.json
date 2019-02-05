@@ -34,6 +34,7 @@
   "dependencies": {
     "accesscontrol": "^1.5.4",
     "http-errors": "^1.7.0",
+    "ip6addr": "^0.2.2",
     "lodash": "^4.17.10",
     "pino": "^4.17.6",
     "request": "^2.88.0"

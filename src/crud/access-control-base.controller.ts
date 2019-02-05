@@ -37,6 +37,7 @@ export class AccessControlBaseController {
       .then(self.setOwner(grant, user))
       .then(self.applyBeforeUpdateIfDefined(options))
       .then(createEntity(self.model))
+      .then(self.applyAfterUpdateIfDefined(options))
     }, options);
   }
 

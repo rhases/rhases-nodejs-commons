@@ -1,6 +1,7 @@
 export * from './logger';
 export * from './security/authorization.utils';
 export * from './security/authentication.service';
+export * from './security/parse-ip.service';
 
 export * from './mongoose/owner.schema';
 
@@ -9,6 +10,7 @@ export * from './utils/controller.utils';
 export * from './utils/entity.utils';
 export * from './utils/controller.utils';
 export * from './utils/merge.util';
+
 
 export * from './crud/base.controller';
 export * from './crud/base.authorization';
