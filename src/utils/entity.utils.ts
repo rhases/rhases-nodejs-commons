@@ -38,7 +38,7 @@ export function applyPatch(patches) {
   };
 }
 
-function patchAsPromised(entity, patches){
+export function patchAsPromised(entity, patches){
     var def = Q.defer();
     entity.patch(patches, function callback(err, result, number) {
       if(!err) {
@@ -48,6 +48,22 @@ function patchAsPromised(entity, patches){
         l.trace(`patch rejected ${err}`);
         def.reject(createError(400, err))
       }
+  });
+  return def.promise;
+}
+
+
+export function updateByIdWithCommandAsPromised(entity: Model<any>, id:any, update:any) {
+  var def = Q.defer();
+  entity.findByIdAndUpdate(id, update, {}, function callback(err, result) {
+    if (!err) {
+      l.trace(`updated documents`);
+      l.trace(result);
+      def.resolve(result)
+    } else {
+      l.trace(`updated rejected ${err}`);
+      def.reject(createError(400, err))
+    }
   });
   return def.promise;
 }

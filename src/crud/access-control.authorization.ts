@@ -27,6 +27,11 @@ export class CrudAccessControl {
     orgRoles = this.filteredRoles(_ac, orgRoles);
     l.trace(`filtered org roles: ${orgRoles}`)
 
+    var assignedRoles = this.getAssignedRoles(user);
+    l.trace(`assignedRoles roles: ${assignedRoles}`)
+    assignedRoles = this.filteredRoles(_ac, assignedRoles);
+    l.trace(`filtered assignedRoles roles: ${assignedRoles}`)
+
     l.trace(`check can ${roles} ${op}Any for ${this.resource}`)
     var anyRoles = roles.concat(orgRoles);
     var anyPermission = this.doCheck(_ac, anyRoles, op, 'Any', this.resource);
@@ -54,6 +59,19 @@ export class CrudAccessControl {
         ownGrant.addGrant(new Grant(organizationOwnPermission, 'own', 'organization'));
       }
 
+      //check for 'own' clearence for 'assignedRoles'
+      l.trace(`check can '${assignedRoles}' ${op}Own for ${this.resource}`)
+      
+      assignedRoles
+        .map(assignedRole => ({ assignedRole, permission: this.doCheck(_ac, [assignedRole], op, 'Own', this.resource) }))
+        .filter(rolePermission => rolePermission.permission.granted)
+        .map(rolePermission => { l.trace(rolePermission); return rolePermission; })
+        .map( ({ assignedRole, permission }) => new Grant(permission, 'own', 'assigned', assignedRole))
+        .map(grant => { l.trace(`grant ${JSON.stringify(grant)}`); return grant; })
+        .forEach(grant => ownGrant.addGrant(grant));
+
+      l.trace(`ownGrant: '${JSON.stringify(ownGrant)}'`)
+
       if (ownGrant.granted) {
         grant = ownGrant;
       } else {
@@ -63,7 +81,7 @@ export class CrudAccessControl {
     return grant;
   }
 
-  private doCheck(_ac, roles, op, type, resource): Permission {
+  private doCheck(_ac: AccessControl, roles, op, type, resource): Permission {
     var permission;
     try {
       permission = _ac.can(roles)[op + type](resource)
@@ -77,7 +95,7 @@ export class CrudAccessControl {
   private grantOwn;
 
   // remove inexistent roles
-  filteredRoles(_ac, roles) {
+  filteredRoles(_ac: AccessControl, roles) {
     if(_.isEmpty(roles))
       return [];
     return roles.filter((role) => {return _ac.hasRole(role)});
@@ -95,28 +113,44 @@ export class CrudAccessControl {
     return orgRoles;
   }
 
+  getAssignedRoles(user) {
+    var assignedRoles = [];
+
+    assignedRoles = assignedRoles.concat(
+      _.uniq(user.roles
+        .filter(function (role) { return role.indexOf('$assigned:') == 0; })
+        .map(function (role) { return role.replace(/:.*:/, ':'); }))
+    );
+
+    return assignedRoles;
+  }
+
 }
 
 export class Grant {
   granted:boolean = false;
   type:string = 'none'; /* none, any, own */
-  ownerTypes:Array<String> = []; /* empty, organziaiton, user*/
+  ownerTypes:Array<String> = []; /* empty, organziaiton, user, assigned */
   permissions:Array<Permission> = [];
   verifiedRoles:Array<String> = [];
+  assignedRoles: Array<String> = [];
 
-  constructor(permission?, _type?, _ownerType?){
+  constructor(permission?, _type?, _ownerType?, assignedRole?){
     if(_type){
       this.type = _type;
     }
     this.addPermission(permission);
     this.addOwnerType(_ownerType);
+    this.addAssignedRole(assignedRole);
   }
 
-  addGrant(grant:Grant){
+  addGrant(grant: Grant): Grant {
     if(!grant) { return; }
     this.type = grant.type;
     this.addPermission(grant.permissions[0]);
     this.addOwnerType(grant.ownerTypes[0]);
+    this.assignedRoles = this.assignedRoles.concat(grant.assignedRoles);
+    return this;
   }
 
   addOwnerType(ownerType){
@@ -133,6 +167,11 @@ export class Grant {
   addVerifiedRoles(roles:Array<String>){
     if(!roles) { return; }
     this.verifiedRoles = this.verifiedRoles.concat(roles);
+  }
+
+  addAssignedRole(role) {
+    if (!role) { return; }
+    this.assignedRoles.push(role);
   }
 
 }

@@ -4,6 +4,7 @@ import l from '../logger';
 var createError = require('http-errors');
 import { assertGranted } from  '../utils/promise-grants.utils';
 import { CallOptions } from './options';
+import { CrudAccessControl } from '../crud/access-control.authorization';
 var _ = require('lodash');
 
 export function respondWithResult(res: Response, operation?: string) {
@@ -40,7 +41,7 @@ export function handleError(res:any, statusCode?:number) {
     l.debug('responding with http error');
     l.debug(err);
     if(err.statusCode){
-      res.status(err.statusCode).send(err.message)
+      res.status(err.statusCode).send(err.message || err)
       return
     }
     if(err.name === 'ValidationError')
@@ -56,7 +57,7 @@ export function successMessageResult(){
   }
 }
 
-export function baseHandle(req: any, res: Response, promisedAc, op: string, handleFnc, options?: CallOptions) {
+export function baseHandle(req: any, res: Response, promisedAc: Promise<CrudAccessControl>, op: string, handleFnc, options?: CallOptions) {
   var self = this;
   return promisedAc
     .then(function(accessControl){
@@ -67,6 +68,6 @@ export function baseHandle(req: any, res: Response, promisedAc, op: string, hand
       return handleFnc(permission, req.user);
     })
     .then(content => (options && options.transformOut) ? options.transformOut(content) : content)
-    .then(self.respondWithResult(res, op))
-    .catch(self.handleError(res))
+    .then(respondWithResult(res, op))
+    .catch(handleError(res))
 }

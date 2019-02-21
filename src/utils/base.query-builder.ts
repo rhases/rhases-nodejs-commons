@@ -8,7 +8,7 @@ import { Model, Document, DocumentQuery } from 'mongoose';
 import { Response } from 'express';
 import { concatFunctions} from './functions.utils';
 
-export function setBasicQueries(schema){
+export function setBasicQueries(schema) {
 
   schema.query.byUser = function(user) {
     if (user)
@@ -105,14 +105,25 @@ export function execfindOneAndUpdateWithQueryBuilder(model: Model<Document>, id,
   }
 }
 
-export function restrictByOwner(ownerTypes, userId?, organizationCodes?){
+export function restrictByOwner(ownerTypes, userId?, organizationCodes?, assignedRole?){
   let restrictions = [];
+  l.trace(`restricting query for ${JSON.stringify(ownerTypes)}`);
+
   if(ownerTypes.indexOf('user') >= 0 ){
     restrictions.push({ "owner.userId": userId });
   }
 
-  if(ownerTypes.indexOf('organization') >= 0 ){
-    restrictions.push({ "owner.organizationCode": { $in: organizationCodes }});
+  if (ownerTypes.indexOf('role') >= 0) {
+    restrictions.push({ 'owner.userId': userId });
+  }
+
+  if(ownerTypes.indexOf('organization') >= 0 ) {
+    restrictions.push({ 'owner.organizationCode': { $in: organizationCodes }});
+  }
+
+  if (ownerTypes.indexOf('assigned') >= 0) {
+    l.trace(`restricting query for assigned ${JSON.stringify(assignedRole)}`);
+    restrictions.push({ [`${assignedRole}`]: userId });
   }
 
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{

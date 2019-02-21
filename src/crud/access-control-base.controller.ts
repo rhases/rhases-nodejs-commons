@@ -6,7 +6,7 @@ var _ = require('lodash');
 import { CallOptions } from '../utils/options';
 import { Promise } from 'q';
 
-import { CrudAccessControl } from './access-control.authorization';
+import { CrudAccessControl, Grant } from './access-control.authorization';
 import { crudAccessControlWithOrgRolesFactory } from './access-control-with-organizations.authorization';
 import { baseHandle,  handleEntityNotFound, respondWithResult, handleError , successMessageResult} from '../utils/controller.utils';
 
@@ -65,15 +65,20 @@ export class AccessControlBaseController {
     }, options)
   }
 
-  restrictedQueryBuilderFactory(grant, user, exQueryBuilder?) {
+  restrictedQueryBuilderFactory(grant:Grant, user, exQueryBuilder?) {
     return function() {
       var restrictedQueryBuilder = function(query) {
         var organizationCodes = user.roles
           .filter(function(role) { return role.indexOf('$organization') == 0; })
           .map(function (role) { return role.replace('$organization:', '').replace(/:.*$/, ''); });
 
+        console.log(`restricting query for ${JSON.stringify(grant)}`);
+
+        var assignedRoles = grant.assignedRoles
+          .map(function (role) { return role.replace('$assigned:', '').replace(/:.*$/, ''); });
+
         return now(query)
-        .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, organizationCodes)))
+        .then(ifGrantedForOwn(grant, restrictByOwner(grant.ownerTypes, user._id, organizationCodes, assignedRoles)))
         .then(ifDefined(exQueryBuilder))
         .value();
       };
@@ -115,6 +120,19 @@ export class AccessControlBaseController {
       .then(self.applyBeforeUpdateIfDefined(options))
       .then(applyPatch(req.body))
       .then(self.applyAfterUpdateIfDefined(options))
+    }, options)
+  }
+
+  patchCustom(req: any, res: Response, createPatch: (any) => {}, options?: CallOptions) {
+    var self = this;
+    return baseHandle(req, res, self.promisedAc, 'update', function (grant, user) {
+      return Q.when()
+        .then(self.restrictedQueryBuilderFactory(grant, user))
+        .then(execFindByIdWithQueryBuilder(self.model, req.params.id))
+        .then(handleEntityNotFound(res))
+        .then(self.applyBeforeUpdateIfDefined(options))
+        .then(entity => applyPatch(createPatch(entity)))
+        .then(self.applyAfterUpdateIfDefined(options))
     }, options)
   }
 
