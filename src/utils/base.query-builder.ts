@@ -123,7 +123,7 @@ export function restrictByOwner(ownerTypes, userId?, organizationCodes?, assigne
 
   if (ownerTypes.indexOf('assigned') >= 0) {
     l.trace(`restricting query for assigned ${JSON.stringify(assignedRole)}`);
-    restrictions.push({ [`${assignedRole}`]: userId });
+    restrictions.push({ [`owner.${assignedRole}`]: userId });
   }
 
   return function(query:DocumentQuery<any, any>): DocumentQuery<any, any>{
