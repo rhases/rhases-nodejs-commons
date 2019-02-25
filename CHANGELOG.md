@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.1.8"></a>
+## [1.1.8](https://github.com/rhases/rhases-nodejs-commons/compare/v1.1.7...v1.1.8) (2019-02-25)
+
+
+### Bug Fixes
+
+* query by assigned roles ([c0eb564](https://github.com/rhases/rhases-nodejs-commons/commit/c0eb564))
+
+
+
 <a name="1.1.7"></a>
 ## [1.1.7](https://github.com/rhases/rhases-nodejs-commons/compare/v1.1.6...v1.1.7) (2019-02-21)
 
